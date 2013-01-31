@@ -1,0 +1,19 @@
+{
+  "name": "jukepi",
+  "version": "0.1.0",
+  "description": "Raspberry Pi Mopidy Jukebox Frontend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "npm i --global grunt-cli",
+    "boo": "echo yes"
+  },
+  "repository": "",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "grunt-contrib-handlebars": "~0.3.3",
+    "grunt": "~0.3.17",
+    "grunt-contrib-less": "~0.3.2"
+  }
+}

@@ -1,0 +1,3 @@
+marked.setOptions({
+  gfm: true
+});
