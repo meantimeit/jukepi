@@ -8632,7 +8632,7 @@ App.utils.loadScript = function (url, callback) {
   head.insertBefore(el, head.firstChild);
 };
 
-App.env.title = 'test';
+App.env.title = 'JukePi';
 App.env.mopidyWebSocketUrl = null;
 App.env.lastfm = {
   key: '2cf976142417f691e2bd09bd4061d241',
