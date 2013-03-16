@@ -5,6 +5,11 @@ App.Collection.TrackList = App.Collection.CoreCollection.extend({
     App.Collection.CoreCollection.prototype.initialize.apply(this, arguments);
     this.listenTo(this.mopidy, 'event:tracklistChanged', this.fetch.bind(this));
   },
+  move: function (model, toIndex) {
+    var modelIndex = this.indexOf(model);
+    App.Collection.CoreCollection.prototype.move.apply(this, arguments);
+    App.mopidy.tracklist.move(modelIndex, modelIndex + 1, toIndex).then(null, App.Collection.CoreCollection.prototype.move.bind(this, model, modelIndex));
+  },
   sync: function (method, model, options) {
     var success = options.success;
     var error = options.error;
@@ -26,7 +31,7 @@ App.Collection.TrackList = App.Collection.CoreCollection.extend({
     this.mopidy.playback.getCurrentTlTrack().then(function (track) {
       track = track || {};
       options.activeTlid = track.tlid;
-      xhr.then(options.success, null, options.error);
+      xhr.then(options.success, options.error);
     }.bind(this));
     model.trigger('request', model, xhr, options);
     return xhr;

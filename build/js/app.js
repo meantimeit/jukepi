@@ -77,10 +77,6 @@ App.Router = Backbone.Router.extend({
   }
 });
 
-App.Model.Notification = Backbone.Model.extend({
-
-});
-
 App.Model.Album = Backbone.Model.extend({
     idAttribute: 'uri',
     initialize: function (attributes, options) {
@@ -165,6 +161,98 @@ App.Model.Album = Backbone.Model.extend({
       this.tracks.reset(tracks);
       this.artist.set(artist);
     }
+});
+
+App.Model.Artist = Backbone.Model.extend({
+    idAttribute: 'uri',
+    initialize: function (attributes, options) {
+      Backbone.Model.prototype.initialize.apply(this, arguments);
+      this.tracks = new App.Collection.Tracks();
+      this.localTracks = new App.Collection.Tracks();
+      this.albums = new App.Collection.Albums();
+    },
+    sync: function (method, model, options) {
+        var success = options.success;
+        var error = options.error;
+        var artistUri = this.id;
+        var artistName = this.get('name');
+        var xhrTasks = {
+          lastfm: false,
+          lookup: false,
+          search: false
+        };
+        var response = {};
+        var xhr;
+
+        var processLookup = function (resp) {
+          var tracks = resp;
+          var _tracks = _(tracks);
+          var albums = _tracks.chain().pluck('album').uniq(false, function (album) { return album.uri; }).value();
+          var artist = _tracks.chain().map(function (track) { return track.artists;  }).flatten().uniq(false, function (artist) { return artist.uri;  }).find(function (artist) { return artist.uri === artistUri;  }).value() || { uri: artistUri, name: artistName };
+          _(response).extend(artist);
+
+          xhrTasks.lookup = true;
+          this.tracks.reset(tracks);
+          this.albums.reset(albums);
+          options.success(response);
+        }.bind(this);
+
+        function processLastfm(resp) {
+          xhrTasks.lastfm = true;
+          response.lastfm = resp.artist;
+          response.images = resp.artist.image.map(function (image) {
+            return { size: image.size, url: image['#text'] };
+          });
+
+          options.success(response);
+        }
+
+        function lastfmError() {
+          xhrTasks.lastfm = true;
+          options.success(response);
+        }
+
+        var processSearch = function (resp) {
+          xhrTasks.search = true;
+          this.localTracks.reset(resp[0].tracks);
+        }.bind(this);
+
+        function searchError(resp) {
+        }
+
+        options.success = function(resp) {
+          if (xhrTasks.lookup && xhrTasks.lastfm) {
+            if (success) {
+              success(model, resp, options);
+            }
+            model.trigger('sync', model, resp, options);
+          }
+        }.bind(this);
+        options.error = function(xhr) {
+          if (error) {
+            error(model, xhr, options);
+          }
+          model.trigger('error', model, xhr, options);
+        }.bind(this);
+
+        App.lastfm.artist.getInfo({ artist: artistName }, { success: processLastfm, error: lastfmError });
+        xhr = App.mopidy.library.lookup(this.id);
+        xhr.then(processLookup, options.error);
+        App.mopidy.library.search({ artist: artistName, uri: 'file://' }).then(processSearch, searchError);
+
+        return xhr;
+    }
+});
+
+App.Model.Authenticate = Backbone.Model.extend({
+    idAttribute: 'user_id',
+    url: function () {
+        return App.config.baseAddress + App.config.apiPath + '/login.php';
+    }
+});
+
+App.Model.Notification = Backbone.Model.extend({
+
 });
 
 App.Model.Search = Backbone.Model.extend({
@@ -292,98 +380,22 @@ App.Model.TrackListTrack = Backbone.Model.extend({
     }
 });
 
-App.Model.Authenticate = Backbone.Model.extend({
-    idAttribute: 'user_id',
-    url: function () {
-        return App.config.baseAddress + App.config.apiPath + '/login.php';
-    }
-});
-
-App.Model.Artist = Backbone.Model.extend({
-    idAttribute: 'uri',
-    initialize: function (attributes, options) {
-      Backbone.Model.prototype.initialize.apply(this, arguments);
-      this.tracks = new App.Collection.Tracks();
-      this.localTracks = new App.Collection.Tracks();
-      this.albums = new App.Collection.Albums();
-    },
-    sync: function (method, model, options) {
-        var success = options.success;
-        var error = options.error;
-        var artistUri = this.id;
-        var artistName = this.get('name');
-        var xhrTasks = {
-          lastfm: false,
-          lookup: false,
-          search: false
-        };
-        var response = {};
-        var xhr;
-
-        var processLookup = function (resp) {
-          var tracks = resp;
-          var _tracks = _(tracks);
-          var albums = _tracks.chain().pluck('album').uniq(false, function (album) { return album.uri; }).value();
-          var artist = _tracks.chain().map(function (track) { return track.artists;  }).flatten().uniq(false, function (artist) { return artist.uri;  }).find(function (artist) { return artist.uri === artistUri;  }).value() || { uri: artistUri, name: artistName };
-          _(response).extend(artist);
-
-          xhrTasks.lookup = true;
-          this.tracks.reset(tracks);
-          this.albums.reset(albums);
-          options.success(response);
-        }.bind(this);
-
-        function processLastfm(resp) {
-          xhrTasks.lastfm = true;
-          response.lastfm = resp.artist;
-          response.images = resp.artist.image.map(function (image) {
-            return { size: image.size, url: image['#text'] };
-          });
-
-          options.success(response);
-        }
-
-        function lastfmError() {
-          xhrTasks.lastfm = true;
-          options.success(response);
-        }
-
-        var processSearch = function (resp) {
-          xhrTasks.search = true;
-          this.localTracks.reset(resp[0].tracks);
-        }.bind(this);
-
-        function searchError(resp) {
-        }
-
-        options.success = function(resp) {
-          if (xhrTasks.lookup && xhrTasks.lastfm) {
-            if (success) {
-              success(model, resp, options);
-            }
-            model.trigger('sync', model, resp, options);
-          }
-        }.bind(this);
-        options.error = function(xhr) {
-          if (error) {
-            error(model, xhr, options);
-          }
-          model.trigger('error', model, xhr, options);
-        }.bind(this);
-
-        App.lastfm.artist.getInfo({ artist: artistName }, { success: processLastfm, error: lastfmError });
-        xhr = App.mopidy.library.lookup(this.id);
-        xhr.then(processLookup, options.error);
-        App.mopidy.library.search({ artist: artistName, uri: 'file://' }).then(processSearch, searchError);
-
-        return xhr;
-    }
-});
-
 App.Collection.CoreCollection = Backbone.Collection.extend({
   mopidy: App.mopidy,
   initialize: function (models, options) {
     Backbone.Collection.prototype.initialize.apply(this, arguments);
+  },
+  move: function (model, toIndex) {
+    var fromIndex = this.indexOf(model);
+
+    if (fromIndex === -1) {
+      throw new Error("Can't move a model that's not in the collection");
+    }
+    if (fromIndex !== toIndex) {
+      this.models.splice(toIndex, 0, this.models.splice(fromIndex, 1)[0]);
+    }
+
+    this.trigger('sort');
   },
   modelAttributes: function () {
     return this.map(this._modelAttributes.bind(this));
@@ -391,6 +403,10 @@ App.Collection.CoreCollection = Backbone.Collection.extend({
   _modelAttributes: function (model) {
     return modelAttributes;
   }
+});
+
+App.Collection.Albums = App.Collection.CoreCollection.extend({
+  model: App.Model.Album
 });
 
 App.Collection.Artists = App.Collection.CoreCollection.extend({
@@ -407,6 +423,11 @@ App.Collection.TrackList = App.Collection.CoreCollection.extend({
   initialize: function (models, options) {
     App.Collection.CoreCollection.prototype.initialize.apply(this, arguments);
     this.listenTo(this.mopidy, 'event:tracklistChanged', this.fetch.bind(this));
+  },
+  move: function (model, toIndex) {
+    var modelIndex = this.indexOf(model);
+    App.Collection.CoreCollection.prototype.move.apply(this, arguments);
+    App.mopidy.tracklist.move(modelIndex, modelIndex + 1, toIndex).then(null, App.Collection.CoreCollection.prototype.move.bind(this, model, modelIndex));
   },
   sync: function (method, model, options) {
     var success = options.success;
@@ -429,15 +450,11 @@ App.Collection.TrackList = App.Collection.CoreCollection.extend({
     this.mopidy.playback.getCurrentTlTrack().then(function (track) {
       track = track || {};
       options.activeTlid = track.tlid;
-      xhr.then(options.success, null, options.error);
+      xhr.then(options.success, options.error);
     }.bind(this));
     model.trigger('request', model, xhr, options);
     return xhr;
   }
-});
-
-App.Collection.Albums = App.Collection.CoreCollection.extend({
-  model: App.Model.Album
 });
 
 App.Collection.Tracks = App.Collection.CoreCollection.extend({
@@ -540,11 +557,16 @@ App.View.CollectionView = App.View.CoreView.extend({
     if (attributes.extended) {
       this._extended = !!attributes.extended;
     }
+    if (attributes.disableCollectionListenersOnRemove) {
+      this._disableCollectionListenersOnRemove = attributes.disableCollectionListenersOnRemove;
+    }
     this.views = [];
     this.collection = attributes.collection;
     this.on('rendering', this._removeViews.bind(this));
     this.on('rendered', this._renderViews.bind(this));
     this.listenTo(this.collection, 'reset', this.render.bind(this));
+    this.listenTo(this.collection, 'remove', this.render.bind(this));
+    this.listenTo(this.collection, 'sort', this.render.bind(this));
     this.listenTo(this.collection, 'reset', this._hideLoadingMessage.bind(this));
   },
   render: function () {
@@ -559,7 +581,9 @@ App.View.CollectionView = App.View.CoreView.extend({
   },
   remove: function () {
     App.View.CoreView.prototype.remove.apply(this);
-    this.collection.stopListening();
+    if (this._disableCollectionListenersOnRemove) {
+      this.collection.stopListening();
+    }
   },
   _hideLoadingMessage: function () {
     this.$el.removeClass('loading');
@@ -587,6 +611,7 @@ App.View.CollectionView = App.View.CoreView.extend({
     this.$el.append(view.render().el);
   },
   _hideOnRender: false,
+  _disableCollectionListenersOnRemove: true,
   _focusNext: function (event) {
     var j = 74, k = 75, up = 38, down = 40, method = null;
 
@@ -602,12 +627,6 @@ App.View.CollectionView = App.View.CoreView.extend({
       $(document.activeElement)[method]('[tabindex="0"]').focus();
     }
   }
-});
-
-App.View.Notification = App.View.ModelView.extend({
-  tagName: 'article',
-  template: 'notification_view',
-  className: 'notification_item'
 });
 
 App.View.AlbumItem = App.View.ModelView.extend({
@@ -626,6 +645,28 @@ App.View.AlbumItem = App.View.ModelView.extend({
 App.View.Album = App.View.ModelView.extend({
   tagName: 'article',
   template: 'album_view'
+});
+
+App.View.ArtistItem = App.View.ModelView.extend({
+  tagName: 'li',
+  template: 'artist_item',
+  className: 'track_list_item',
+  events: {
+    'click li': 'viewArtist'
+  },
+  viewArtist: function () {
+    App.router.navigate('/artists/' + this.model.id + '/' + this.model.get('name'), { trigger: true });
+  }
+});
+App.View.Artist = App.View.ModelView.extend({
+  tagName: 'article',
+  template: 'artist_view'
+});
+
+App.View.Notification = App.View.ModelView.extend({
+  tagName: 'article',
+  template: 'notification_view',
+  className: 'notification_item'
 });
 
 App.View.Track = App.View.ModelView.extend({
@@ -658,11 +699,17 @@ App.View.TrackListTrack = App.View.ModelView.extend({
   template: 'tracklist_item',
   events: {
     'dblclick li': 'play',
-    'keydown li': 'play'
+    'keydown li': 'play',
+    'dragstart li': '_onDragStart',
+    'dragend li': '_onDragEnd',
+    'drop li': '_onDrop',
+    'dragenter li': '_onDragEnter',
+    'dragover li': '_onDragOver',
+    'dragleave li': '_onDragLeave'
   },
   initialize: function (attributes, options) {
     App.View.ModelView.prototype.initialize.apply(this, arguments);
-    this.on('rendered', this._toggleCurrentTrackIfCurrent.bind(this));
+    this.on('rendered', this._onRendered.bind(this));
   },
   play: function (event) {
     var isKeyDownPlay = event.type === 'keydown' && event.which === 13;
@@ -673,6 +720,13 @@ App.View.TrackListTrack = App.View.ModelView.extend({
       this.mopidy.playback.play(this.model.attributes);
     }
   },
+  _onRendered: function () {
+    this._enableDraggableOnElement();
+    this._toggleCurrentTrackIfCurrent();
+  },
+  _enableDraggableOnElement: function () {
+    this.$el.attr('draggable', 'true');
+  },
   _toggleCurrentTrackIfCurrent: function () {
     if (this.model.current) {
       this.$el.addClass('current_track');
@@ -680,23 +734,46 @@ App.View.TrackListTrack = App.View.ModelView.extend({
     else {
       this.$el.removeClass('current_track');
     }
-  }
+  },
+  _onDragStart: function (event) {
+    event.dataTransfer.setData('track_index', this.model.collection.indexOf(this.model));
+  },
+  _onDragEnd: function (event) {
+    this.$el.removeClass('dragover');
+  },
+  _onDrop: function (event) {
+    var index = +event.dataTransfer.getData('track_index');
+    var sourceTrack = this.model.collection.at(index);
+    var targetIndex = this.model.collection.indexOf(this.model);
+    var newIndex = targetIndex + (targetIndex < index ? 1 : 0);
+
+    this.$el.removeClass('current_track');
+
+    if (index !== targetIndex) {
+      this.model.collection.move(sourceTrack, newIndex);
+    }
+  },
+  _onDragEnter: function (event) {
+    this.$el.addClass('dragover');
+    event.preventDefault();
+  },
+  _onDragOver: function (event) {
+    event.preventDefault();
+  },
+  _onDragLeave: function (event) {
+    this.$el.removeClass('dragover');
+  },
 });
 
-App.View.ArtistItem = App.View.ModelView.extend({
-  tagName: 'li',
-  template: 'artist_item',
-  className: 'track_list_item',
-  events: {
-    'click li': 'viewArtist'
-  },
-  viewArtist: function () {
-    App.router.navigate('/artists/' + this.model.id + '/' + this.model.get('name'), { trigger: true });
+App.View.Albums = App.View.CollectionView.extend({
+  tagName: 'ul',
+  className: 'track_list loading',
+  template: 'album_index',
+  itemViewClass: App.View.AlbumItem,
+  resetResults: function () {
+    this.collection.reset();
+    this.$el.addClass('loading');
   }
-});
-App.View.Artist = App.View.ModelView.extend({
-  tagName: 'article',
-  template: 'artist_view'
 });
 
 App.View.Artists = App.View.CollectionView.extend({
@@ -724,17 +801,11 @@ App.View.TrackList = App.View.CollectionView.extend({
   itemViewClass: App.View.TrackListTrack,
   initialize: function (attributes, options) {
     App.View.CollectionView.prototype.initialize.apply(this, arguments);
-  }
-});
-
-App.View.Albums = App.View.CollectionView.extend({
-  tagName: 'ul',
-  className: 'track_list loading',
-  template: 'album_index',
-  itemViewClass: App.View.AlbumItem,
-  resetResults: function () {
-    this.collection.reset();
-    this.$el.addClass('loading');
+    this.once('rendering', function () {
+      if (this.collection.length) {
+        this.$el.removeClass('loading');
+      }
+    }.bind(this));
   }
 });
 
@@ -751,47 +822,6 @@ App.View.Tracks = App.View.CollectionView.extend({
     this.$el.addClass('loading');
   }
 
-});
-
-App.View.HomePage = App.View.PageView.extend({
-  tagName: 'div',
-  className: 'view',
-  title: 'Home',
-  events: {
-    'click .clear_queue': 'clearQueue'
-  },
-  template: 'home_page',
-  views: {},
-  initialize: function (attributes, options) {
-    App.View.PageView.prototype.initialize.apply(this, arguments);
-    this._initTrackList();
-    this._initSubViews();
-    this.on('rendered', this._fetchTrackList.bind(this));
-    this.on('rendered', this._attachSubViews.bind(this));
-  },
-  clearQueue: function () {
-    var message1 = 'If you click OK to this, you WILL wipe the queue. Are you sure?',
-        message2 = 'Really Sure? With great power, comes great responsibility.';
-
-    if (confirm(message1) && confirm(message2)) {
-      App.mopidy.tracklist.clear();
-    }
-  },
-  _initSubViews: function () {
-    this.views.trackList = new App.View.TrackList({
-      collection: this._trackList
-    });
-  },
-  _initTrackList: function () {
-    this._trackList = new App.Collection.TrackList();
-  },
-  _fetchTrackList: function () {
-    this._trackList.fetch();
-  },
-  _attachSubViews: function () {
-    this.$('.play_queue').append(this.views.trackList.render().el);
-  },
-  _trackList: null
 });
 
 App.View.AlbumPage = App.View.PageView.extend({
@@ -918,6 +948,159 @@ App.View.ArtistPage = App.View.PageView.extend({
         extended: true
       })
     };
+  }
+});
+
+App.View.HomePage = App.View.PageView.extend({
+  tagName: 'div',
+  className: 'view',
+  title: 'Home',
+  events: {
+    'click .clear_queue': 'clearQueue',
+    'click .delete_selected': 'deleteSelected'
+  },
+  template: 'home_page',
+  views: {},
+  initialize: function (attributes, options) {
+    App.View.PageView.prototype.initialize.apply(this, arguments);
+    this._initTrackList();
+    this._initSubViews();
+    this.on('rendered', this._fetchTrackList.bind(this));
+    this.on('rendered', this._attachSubViews.bind(this));
+  },
+  clearQueue: function () {
+    var message1 = 'If you click OK to this, you WILL wipe the queue. Are you sure?',
+        message2 = 'Really Sure? With great power, comes great responsibility.';
+
+    if (confirm(message1) && confirm(message2)) {
+      App.mopidy.tracklist.clear();
+    }
+  },
+  deleteSelected: function (event) {
+    var tlids = this.$('[type=checkbox]:checked').map(function (index, input) {
+      return +input.getAttribute('data-tracklist-id');
+    }.bind(this)).toArray();
+
+    this._deleteSelectedTracks(tlids);
+  },
+  _deleteSelectedTracks: function (tlids) {
+    var tlid, successCallback = null;
+
+    if (tlids.length) {
+      tlid = tlids.shift();
+      App.mopidy.tracklist.remove({ tlid: tlid }).then(function () {
+        this._trackList.remove(this._trackList.where({ tlid: tlid }));
+        this._deleteSelectedTracks(tlids);
+      }.bind(this));
+      App.mopidy.tracklist.remove({ tlid: tlid }).then(this._deleteSelectedTracks.bind(this, tlids));
+    }
+
+  },
+  _initSubViews: function () {
+    this.views.trackList = new App.View.TrackList({
+      collection: this._trackList,
+      disableCollectionListenersOnRemove: false,
+      extended: true
+    });
+  },
+  _initTrackList: function () {
+    this._trackList = App.tracklist;
+  },
+  _fetchTrackList: function () {
+    this._trackList.fetch();
+  },
+  _attachSubViews: function () {
+    this.$('.play_queue').append(this.views.trackList.render().el);
+  },
+  _trackList: null
+});
+
+App.View.ChatView = App.View.CoreView.extend({
+  tagName: 'div',
+  events: {
+    'keypress [name=chat_text]': 'sendChat'
+  },
+  initialize: function (attributes, options) {
+    App.View.CoreView.prototype.initialize.call(this, attributes, options);
+    this._template = this._getTemplate('chat_index');
+    App.socket.on('chat', this.displayChatMessage.bind(this));
+  },
+  sendChat: function (event) {
+    var textInput = this.$('[name=chat_text]'),
+        text = textInput.val();
+    if (event.keyCode === 13 && text !== '') {
+      App.socket.emit('chat', { message: text, who: 'Someone' });
+      this.displayChatMessage({
+        message: text,
+        who: 'You'
+      });
+      textInput.val('');
+    }
+  },
+  displayChatMessage: function (context) {
+    var messageView = new App.View.ChatMessageView(context);
+    this.$('.messages').html(messageView.render().el);
+
+  }
+});
+
+App.View.ChatMessageView = App.View.ModelView.extend({
+  tagName: 'p',
+  initialize: function (attributes, options) {
+    App.View.CoreView.prototype.initialize.call(this, attributes, options);
+    this._template = App.Templates.chat_message;
+    this.model = {
+      attributes: {
+        who: attributes.who,
+        message: attributes.message
+      }
+    };
+  },
+  render: function () {
+    this.$el.html(this._template(this.model.attributes));
+    return this;
+  }
+});
+
+App.View.Controls = App.View.CoreView.extend({
+  tagName: 'li',
+  className: 'nav_main_controls',
+  template: 'navigation_controls',
+  events: {
+    'click .nav_main_back': 'previous',
+    'click .nav_main_next': 'next',
+    'click .nav_main_play': 'play',
+    'click .nav_main_pause': 'pause'
+  },
+  initialize: function (attributes, options) {
+    App.View.CoreView.prototype.initialize.apply(this, arguments);
+    this.on('rendered', function () {
+      App.mopidy.playback.getState().then(this._changePlaybackState.bind(this));
+    }.bind(this));
+    this.listenTo(App.mopidy, 'event:playbackStateChanged', this._onPlaybackStateChanged.bind(this));
+  },
+  play: function () {
+    App.mopidy.playback.play().then(null, console.error.bind(console));
+  },
+  pause: function () {
+    App.mopidy.playback.pause().then(null, console.error.bind(console));
+  },
+  next: function () {
+    App.mopidy.playback.next().then(null, console.error.bind(console));
+  },
+  previous: function () {
+    App.mopidy.playback.previous().then(null, console.error.bind(console));
+  },
+  _onPlaybackStateChanged: function (event) {
+    this._changePlaybackState(event.new_state);
+  },
+  _changePlaybackState: function (state) {
+    if (state === 'playing') {
+      this.$el.addClass('playing');
+    }
+    else {
+      this.$el.removeClass('playing');
+    }
   }
 });
 
@@ -1070,95 +1253,6 @@ App.View.Navigation = App.View.CoreView.extend({
   }
 });
 
-App.View.Controls = App.View.CoreView.extend({
-  tagName: 'li',
-  className: 'nav_main_controls',
-  template: 'navigation_controls',
-  events: {
-    'click .nav_main_back': 'previous',
-    'click .nav_main_next': 'next',
-    'click .nav_main_play': 'play',
-    'click .nav_main_pause': 'pause'
-  },
-  initialize: function (attributes, options) {
-    App.View.CoreView.prototype.initialize.apply(this, arguments);
-    this.on('rendered', function () {
-      App.mopidy.playback.getState().then(this._changePlaybackState.bind(this));
-    }.bind(this));
-    this.listenTo(App.mopidy, 'event:playbackStateChanged', this._onPlaybackStateChanged.bind(this));
-  },
-  play: function () {
-    App.mopidy.playback.play().then(null, console.error.bind(console));
-  },
-  pause: function () {
-    App.mopidy.playback.pause().then(null, console.error.bind(console));
-  },
-  next: function () {
-    App.mopidy.playback.next().then(null, console.error.bind(console));
-  },
-  previous: function () {
-    App.mopidy.playback.previous().then(null, console.error.bind(console));
-  },
-  _onPlaybackStateChanged: function (event) {
-    this._changePlaybackState(event.new_state);
-  },
-  _changePlaybackState: function (state) {
-    if (state === 'playing') {
-      this.$el.addClass('playing');
-    }
-    else {
-      this.$el.removeClass('playing');
-    }
-  }
-});
-
-App.View.ChatView = App.View.CoreView.extend({
-  tagName: 'div',
-  events: {
-    'keypress [name=chat_text]': 'sendChat'
-  },
-  initialize: function (attributes, options) {
-    App.View.CoreView.prototype.initialize.call(this, attributes, options);
-    this._template = this._getTemplate('chat_index');
-    App.socket.on('chat', this.displayChatMessage.bind(this));
-  },
-  sendChat: function (event) {
-    var textInput = this.$('[name=chat_text]'),
-        text = textInput.val();
-    if (event.keyCode === 13 && text !== '') {
-      App.socket.emit('chat', { message: text, who: 'Someone' });
-      this.displayChatMessage({
-        message: text,
-        who: 'You'
-      });
-      textInput.val('');
-    }
-  },
-  displayChatMessage: function (context) {
-    var messageView = new App.View.ChatMessageView(context);
-    this.$('.messages').html(messageView.render().el);
-
-  }
-});
-
-App.View.ChatMessageView = App.View.ModelView.extend({
-  tagName: 'p',
-  initialize: function (attributes, options) {
-    App.View.CoreView.prototype.initialize.call(this, attributes, options);
-    this._template = App.Templates.chat_message;
-    this.model = {
-      attributes: {
-        who: attributes.who,
-        message: attributes.message
-      }
-    };
-  },
-  render: function () {
-    this.$el.html(this._template(this.model.attributes));
-    return this;
-  }
-});
-
 App.View.Search = App.View.CoreView.extend({
   tagName: 'div',
   className: 'search_results_list triangle_border_top hidden',
@@ -1215,6 +1309,7 @@ $(function () {
       current: '',
       menu: App.config.navigationLists.standard
     });
+    App.tracklist = new App.Collection.TrackList();
     App.utils.appendToNavMain(App.mainNavigation.render().el);
     Backbone.history.start(App.config.backboneHistory);
   });

@@ -3,7 +3,8 @@ App.View.HomePage = App.View.PageView.extend({
   className: 'view',
   title: 'Home',
   events: {
-    'click .clear_queue': 'clearQueue'
+    'click .clear_queue': 'clearQueue',
+    'click .delete_selected': 'deleteSelected'
   },
   template: 'home_page',
   views: {},
@@ -22,13 +23,35 @@ App.View.HomePage = App.View.PageView.extend({
       App.mopidy.tracklist.clear();
     }
   },
+  deleteSelected: function (event) {
+    var tlids = this.$('[type=checkbox]:checked').map(function (index, input) {
+      return +input.getAttribute('data-tracklist-id');
+    }.bind(this)).toArray();
+
+    this._deleteSelectedTracks(tlids);
+  },
+  _deleteSelectedTracks: function (tlids) {
+    var tlid, successCallback = null;
+
+    if (tlids.length) {
+      tlid = tlids.shift();
+      App.mopidy.tracklist.remove({ tlid: tlid }).then(function () {
+        this._trackList.remove(this._trackList.where({ tlid: tlid }));
+        this._deleteSelectedTracks(tlids);
+      }.bind(this));
+      App.mopidy.tracklist.remove({ tlid: tlid }).then(this._deleteSelectedTracks.bind(this, tlids));
+    }
+
+  },
   _initSubViews: function () {
     this.views.trackList = new App.View.TrackList({
-      collection: this._trackList
+      collection: this._trackList,
+      disableCollectionListenersOnRemove: false,
+      extended: true
     });
   },
   _initTrackList: function () {
-    this._trackList = new App.Collection.TrackList();
+    this._trackList = App.tracklist;
   },
   _fetchTrackList: function () {
     this._trackList.fetch();

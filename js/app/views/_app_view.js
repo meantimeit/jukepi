@@ -94,11 +94,16 @@ App.View.CollectionView = App.View.CoreView.extend({
     if (attributes.extended) {
       this._extended = !!attributes.extended;
     }
+    if (attributes.disableCollectionListenersOnRemove) {
+      this._disableCollectionListenersOnRemove = attributes.disableCollectionListenersOnRemove;
+    }
     this.views = [];
     this.collection = attributes.collection;
     this.on('rendering', this._removeViews.bind(this));
     this.on('rendered', this._renderViews.bind(this));
     this.listenTo(this.collection, 'reset', this.render.bind(this));
+    this.listenTo(this.collection, 'remove', this.render.bind(this));
+    this.listenTo(this.collection, 'sort', this.render.bind(this));
     this.listenTo(this.collection, 'reset', this._hideLoadingMessage.bind(this));
   },
   render: function () {
@@ -113,7 +118,9 @@ App.View.CollectionView = App.View.CoreView.extend({
   },
   remove: function () {
     App.View.CoreView.prototype.remove.apply(this);
-    this.collection.stopListening();
+    if (this._disableCollectionListenersOnRemove) {
+      this.collection.stopListening();
+    }
   },
   _hideLoadingMessage: function () {
     this.$el.removeClass('loading');
@@ -141,6 +148,7 @@ App.View.CollectionView = App.View.CoreView.extend({
     this.$el.append(view.render().el);
   },
   _hideOnRender: false,
+  _disableCollectionListenersOnRemove: true,
   _focusNext: function (event) {
     var j = 74, k = 75, up = 38, down = 40, method = null;
 

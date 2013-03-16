@@ -137,6 +137,9 @@ form {
   padding: 0 .125em;
   .box-sizing(border-box);
   .track_list_item {
+    span {
+      pointer-events: none;
+    }
     display: block;
     input[type=checkbox] {
       margin: 0;
@@ -177,6 +180,12 @@ form {
       .inner-shadow(0, 1px, 2px, 0.4);
       .rounded(3px);
       background-color: rgba(0,0,0,.1);
+    }
+    &.dragover:after {
+      content: ' Drop Zone ';
+      line-height: 2;
+      display: block;
+      border: 1px dashed rgba(0,0,0,.2);
     }
   }
   &.loading {

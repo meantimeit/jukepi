@@ -14,6 +14,7 @@ $(function () {
       current: '',
       menu: App.config.navigationLists.standard
     });
+    App.tracklist = new App.Collection.TrackList();
     App.utils.appendToNavMain(App.mainNavigation.render().el);
     Backbone.history.start(App.config.backboneHistory);
   });
