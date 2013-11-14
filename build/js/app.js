@@ -236,9 +236,9 @@ App.Model.Artist = Backbone.Model.extend({
         }.bind(this);
 
         App.lastfm.artist.getInfo({ artist: artistName }, { success: processLastfm, error: lastfmError });
+        App.mopidy.library.search({ artist: artistName }, ['file:']).then(processSearch, searchError);
         xhr = App.mopidy.library.lookup(this.id);
         xhr.then(processLookup, options.error);
-        App.mopidy.library.search({ artist: artistName, uri: 'file://' }).then(processSearch, searchError);
 
         return xhr;
     }
@@ -295,34 +295,47 @@ App.Model.Search = Backbone.Model.extend({
   },
   _searchTimestamp: 0,
   _syncResponseToCollections: function (resp) {
-    if (resp[0] && resp[0].tracks && resp[0].tracks.length) {
-      this.localTracks.reset(resp[0].tracks);
+    var spotifyData = {};
+    var localData = [];
+    var r;
+
+    for (r = 0; r < resp.length; r++) {
+      if (resp[r] && resp[r].tracks && resp[r].tracks.length) {
+        if (resp[r].uri.match(/^file\:/)) {
+          localData = resp[r].tracks;
+        }
+        else if (resp[r].uri.match(/^spotify\:/)) {
+          spotifyData = resp[r];
+        }
+      }
+    }
+
+    if (localData.length) {
+      this.localTracks.reset(localData);
     }
     else {
       this.localTracks.reset();
     }
 
-    if (resp[1]) {
-      if (resp[1].tracks && resp[1].tracks.length) {
-        this.tracks.reset(resp[1].tracks);
-      }
-      else {
-        this.tracks.reset();
-      }
+    if (spotifyData.tracks && spotifyData.tracks.length) {
+      this.tracks.reset(spotifyData.tracks);
+    }
+    else {
+      this.tracks.reset();
+    }
 
-      if (resp[1].albums && resp[1].albums.length) {
-        this.albums.reset(resp[1].albums);
-      }
-      else {
-        this.albums.reset();
-      }
+    if (spotifyData.albums && spotifyData.albums.length) {
+      this.albums.reset(spotifyData.albums);
+    }
+    else {
+      this.albums.reset();
+    }
 
-      if (resp[1].artists && resp[1].artists.length) {
-        this.artists.reset(resp[1].artists);
-      }
-      else {
-        this.artists.reset();
-      }
+    if (spotifyData.artists && spotifyData.artists.length) {
+      this.artists.reset(spotifyData.artists);
+    }
+    else {
+      this.artists.reset();
     }
   }
 });
@@ -330,36 +343,63 @@ App.Model.Search = Backbone.Model.extend({
 App.Model.Track = Backbone.Model.extend({
     idAttribute: 'uri',
     sync: function (method, model, options) {
-      var success = options.success;
-      var error = options.error;
-      var xhr;
+      try {
+        var success = options.success;
+        var error = options.error;
+        var response = {};
+        var xhr;
 
-      options.success = function(resp) {
-        if (success) {
-          success(model, resp, options);
+        options.success = function(resp) {
+          var lastfm, images;
+          if (resp.album) {
+            response.images = resp.album.image.map(function (image) {
+              return {
+                url: image['#text'],
+                size: image.size
+              };
+            });
+            response.lastfm = resp.album;
+          }
+
+          resp = response;
+
+          if (success) {
+            success(model, resp, options);
+          }
+          model.trigger('sync', model, resp, options);
+        }.bind(this);
+        options.error = function(xhr) {
+          if (error) {
+            error(model, xhr, options);
+          }
+          model.trigger('error', model, xhr, options);
+        }.bind(this);
+
+        if (method === 'update') {
+          xhr = App.mopidy.tracklist.add([ model ]);
+          xhr.then(options.success, null, options.error);
         }
-        model.trigger('sync', model, resp, options);
-      }.bind(this);
-      options.error = function(xhr) {
-        if (error) {
-          error(model, xhr, options);
+        else {
+          if (this.attributes.lastfm === undefined) {
+            _(response).extend(this.attributes);
+            App.lastfm.album.getInfo({
+              artist: this.attributes.artists[0].name,
+              album: this.attributes.album.name
+            }, { success: options.success, error: options.error });
+          }
         }
-        model.trigger('error', model, xhr, options);
-      }.bind(this);
 
-      if (method === 'update') {
-        xhr = App.mopidy.tracklist.add([ model ]);
-        xhr.then(options.success, null, options.error);
-      }
-
-      return xhr;
+        return xhr;
+      } catch (e) { console.error(e.stack); }
     }
 });
 App.Model.TrackListTrack = Backbone.Model.extend({
     idAttribute: 'tlid',
     current: false,
     initialize: function (attributes, options) {
-      Backbone.Model.prototype.initialize.apply(this, arguments);
+      Backbone.Model.prototype.initialize.call(this, attributes, options);
+      options = options || {};
+
       this.current = attributes.tlid === options.activeTlid;
       this.track = new App.Model.Track(attributes.track);
       this._initListeners();
@@ -430,30 +470,39 @@ App.Collection.TrackList = App.Collection.CoreCollection.extend({
     App.mopidy.tracklist.move(modelIndex, modelIndex + 1, toIndex).then(null, App.Collection.CoreCollection.prototype.move.bind(this, model, modelIndex));
   },
   sync: function (method, model, options) {
-    var success = options.success;
-    var error = options.error;
+    try {
+      var success = options.success;
+      var error = options.error;
 
-    options.success = function(resp) {
-      if (success) {
-        success(model, resp, options);
-      }
-      model.trigger('sync', model, resp, options);
-    };
-    options.error = function(xhr) {
-      if (error) {
-        error(model, xhr, options);
-      }
-      model.trigger('error', model, xhr, options);
-    };
+      options.success = function(resp) {
+        if (success) {
+          success(model, resp, options);
+        }
+        model.trigger('sync', model, resp, options);
+      };
+      options.error = function(xhr) {
+        if (error) {
+          error(model, xhr, options);
+        }
+        model.trigger('error', model, xhr, options);
+      };
 
-    var xhr = this.mopidy.tracklist.getTlTracks();
-    this.mopidy.playback.getCurrentTlTrack().then(function (track) {
-      track = track || {};
-      options.activeTlid = track.tlid;
-      xhr.then(options.success, options.error);
-    }.bind(this));
-    model.trigger('request', model, xhr, options);
-    return xhr;
+      var xhr = this.mopidy.tracklist.getTlTracks();
+      this.mopidy.playback.getCurrentTlTrack().then(function (track) {
+        track = track || {};
+        options.activeTlid = track.tlid;
+        xhr.then(options.success, options.error);
+      }.bind(this));
+      model.trigger('request', model, xhr, options);
+      return xhr;
+    } catch (e) { console.error(e.stack); }
+  },
+  current: function() {
+    var tlTrack = this.filter(function (tlTrack) {
+      return tlTrack.current;
+    })[0];
+
+    return tlTrack;
   }
 });
 
@@ -672,18 +721,18 @@ App.View.Notification = App.View.ModelView.extend({
 App.View.Track = App.View.ModelView.extend({
   tagName: 'li',
   events: {
-    'dblclick li': 'addToTracklist',
-    'keydown li': 'toggleSelected'
+    'dblclick li': '_addToTracklist',
+    'keydown li': '_toggleSelected'
   },
   template: 'track_item',
   className: 'track_list_item',
   initialize: function (attributes, options) {
     App.View.ModelView.prototype.initialize.apply(this, arguments);
   },
-  addToTracklist: function (event) {
+  _addToTracklist: function (event) {
     this.model.save();
   },
-  toggleSelected: function (event) {
+  _toggleSelected: function (event) {
     var checkbox;
 
     if (this._extended && event.which === 32) {
@@ -699,7 +748,7 @@ App.View.TrackListTrack = App.View.ModelView.extend({
   template: 'tracklist_item',
   events: {
     'dblclick li': 'play',
-    'keydown li': 'play',
+    'keydown li': '_onKeydown',
     'dragstart li': '_onDragStart',
     'dragend li': '_onDragEnd',
     'drop li': '_onDrop',
@@ -720,6 +769,17 @@ App.View.TrackListTrack = App.View.ModelView.extend({
       this.mopidy.playback.play(this.model.attributes);
     }
   },
+  _onKeydown: function (event) {
+    var enterKey = event.which === 13;
+    var spaceKey = event.which === 32;
+
+    if (enterKey) {
+      this._play(event);
+    }
+    else if (spaceKey) {
+      this._toggleSelected(event);
+    }
+  },
   _onRendered: function () {
     this._enableDraggableOnElement();
     this._toggleCurrentTrackIfCurrent();
@@ -735,6 +795,11 @@ App.View.TrackListTrack = App.View.ModelView.extend({
       this.$el.removeClass('current_track');
     }
   },
+  _toggleSelected: function (event) {
+    var checkbox = this.$('input[type=checkbox]')[0];
+    checkbox.checked = !checkbox.checked;
+    event.preventDefault();
+  },
   _onDragStart: function (event) {
     event.dataTransfer.setData('track_index', this.model.collection.indexOf(this.model));
   },
@@ -742,15 +807,19 @@ App.View.TrackListTrack = App.View.ModelView.extend({
     this.$el.removeClass('dragover');
   },
   _onDrop: function (event) {
-    var index = +event.dataTransfer.getData('track_index');
-    var sourceTrack = this.model.collection.at(index);
-    var targetIndex = this.model.collection.indexOf(this.model);
-    var newIndex = targetIndex + (targetIndex < index ? 1 : 0);
+    var index, sourceTrack, targetIndex, newIndex;
 
-    this.$el.removeClass('current_track');
+    if (this.model && this.model.collection) {
+      index = +event.dataTransfer.getData('track_index');
+      sourceTrack = this.model.collection.at(index);
+      targetIndex = this.model.collection.indexOf(this.model);
+      newIndex = targetIndex + (targetIndex < index ? 1 : 0);
 
-    if (index !== targetIndex) {
-      this.model.collection.move(sourceTrack, newIndex);
+      this.$el.removeClass('current_track');
+
+      if (index !== targetIndex) {
+        this.model.collection.move(sourceTrack, newIndex);
+      }
     }
   },
   _onDragEnter: function (event) {
@@ -957,7 +1026,9 @@ App.View.HomePage = App.View.PageView.extend({
   title: 'Home',
   events: {
     'click .clear_queue': 'clearQueue',
-    'click .delete_selected': 'deleteSelected'
+    'click .delete_selected': 'deleteSelected',
+    'click [data-artist-uri]': 'viewArtist',
+    'click [data-album-uri]': 'viewAlbum'
   },
   template: 'home_page',
   views: {},
@@ -983,6 +1054,18 @@ App.View.HomePage = App.View.PageView.extend({
 
     this._deleteSelectedTracks(tlids);
   },
+  viewAlbum: function (event) {
+    var uri = event.currentTarget.getAttribute('data-album-uri');
+
+    event.preventDefault();
+    App.router.navigate('/album/' + uri, { trigger: true });
+  },
+  viewArtist: function (event) {
+    var name = event.currentTarget.getAttribute('data-artist-name');
+
+    event.preventDefault();
+    App.router.navigate('/artists/' + name, { trigger: true });
+  },
   _deleteSelectedTracks: function (tlids) {
     var tlid, successCallback = null;
 
@@ -1002,6 +1085,10 @@ App.View.HomePage = App.View.PageView.extend({
       disableCollectionListenersOnRemove: false,
       extended: true
     });
+    this.views.nowPlaying = new App.View.NowPlaying({
+      tlTrack: { tlTrack: this._trackList.current() ? this._trackList.current().toJSON() : null }
+    });
+    this.views.volumeControl = new App.View.VolumeControl();
   },
   _initTrackList: function () {
     this._trackList = App.tracklist;
@@ -1011,6 +1098,8 @@ App.View.HomePage = App.View.PageView.extend({
   },
   _attachSubViews: function () {
     this.$('.play_queue').append(this.views.trackList.render().el);
+    this.$('.now_playing').append(this.views.nowPlaying.render().el);
+    this.$('.general_controls').append(this.views.volumeControl.render().el);
   },
   _trackList: null
 });
@@ -1253,6 +1342,40 @@ App.View.Navigation = App.View.CoreView.extend({
   }
 });
 
+App.View.NowPlaying = App.View.CoreView.extend({
+  tagName: 'div',
+  template: 'nowplaying_view',
+  initialize: function (attributes, options) {
+    App.View.CoreView.prototype.initialize.apply(this, arguments);
+    this._mopidy = attributes.mopidy || App.mopidy;
+    this.listenTo(this._mopidy, 'event:trackPlaybackStarted', this._updateTrack.bind(this));
+
+    if (attributes.tlTrack) {
+      this.once('rendered', function () {
+        this._updateTrack(attributes.tlTrack);
+      }.bind(this));
+    }
+  },
+  remove: function () {
+    App.View.CoreView.prototype.remove.apply(this, arguments);
+    this.stopListening();
+  },
+  render: function () {
+    var data = this._track && this._track.toJSON ? this._track.toJSON() : {};
+    this.trigger('rendering');
+    this.$el.html(this._template(data));
+    this.trigger('rendered');
+    return this;
+  },
+  _updateTrack: function (data) {
+    if (data && data.tl_track && data.tl_track.track) {
+      this._track = new App.Model.Track(_(data.tl_track.track).clone());
+      this._track.once('sync', this.render.bind(this));
+      this._track.fetch();
+    }
+  }
+});
+
 App.View.Search = App.View.CoreView.extend({
   tagName: 'div',
   className: 'search_results_list triangle_border_top hidden',
@@ -1290,6 +1413,72 @@ App.View.Search = App.View.CoreView.extend({
     this.views.artists.resetResults();
     this.views.tracks.resetResults();
     this.views.localTracks.resetResults();
+  }
+});
+
+App.View.VolumeControl = App.View.CoreView.extend({
+  tagName: 'div',
+  className: 'volume_control',
+  template: 'home_volume_control',
+  events: {
+    'keyup [type=text]': '_onVolumeControlChange',
+    'click .volume_down': '_decrementVolume',
+    'click .volume_up': '_incrementVolume'
+  },
+  initialize: function (attributes, options) {
+    App.View.CoreView.prototype.initialize.apply(this, arguments);
+    this.listenTo(App.mopidy, 'event:volumeChanged', this._onVolumeChanged.bind(this));
+    this.once('rendered', this._initializeVolume.bind(this));
+  },
+  render: function () {
+    this.$el.html(this._template({ volume: this._volumeLevel }));
+    this.trigger('rendered');
+    return this;
+  },
+  remove: function () {
+    this.stopListening();
+    App.View.CoreView.prototype.remove.apply(this, arguments);
+  },
+  _volumeChangeTimeout: null,
+  _volumeChangeTimeoutDelay: 1000,
+  _volumeLevel: null,
+  _onVolumeControlChange: function (event) {
+    event.srcElement.value = event.srcElement.value.replace(/[^0-9]+/, '');
+    this._volumeLevel = event.srcElement.value;
+    window.clearTimeout(this._volumeChangeTimeout);
+    this._volumeChangeTimeout = window.setTimeout(this._updateVolume.bind(this, +this._volumeLevel), this._volumeChangeTimeoutDelay);
+  },
+  _onVolumeChanged: function (event) {
+    this._volumeLevel = event.volume;
+    this._updateVolumeControl();
+  },
+  _updateVolume: function (volume) {
+    this._disableVolumeControl();
+    App.mopidy.playback.setVolume(volume).always(this._enableVolumeControl.bind(this));
+  },
+  _updateVolumeControl: function () {
+    this.$('[type=text]').val(this._volumeLevel);
+  },
+  _disableVolumeControl: function () {
+    this.$('[type=text]').disabled = true;
+  },
+  _enableVolumeControl: function () {
+    this.$('[type=text]').disabled = false;
+  },
+  _decrementVolume: function () {
+    this._volumeLevel--;
+    this._updateVolume(this._volumeLevel);
+  },
+  _incrementVolume: function () {
+    this._volumeLevel++;
+    this._updateVolume(this._volumeLevel);
+  },
+  _initializeVolume: function() {
+    App.mopidy.playback.getVolume().then(this._onGetVolume.bind(this));
+  },
+  _onGetVolume: function (volume) {
+    this._volumeLevel = volume;
+    this.render();
   }
 });
 

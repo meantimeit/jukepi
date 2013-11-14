@@ -224,7 +224,30 @@ this["App"]["Templates"]["home_page"] = Handlebars.template(function (Handlebars
   
 
 
-  return "<div class=\"columns one-half\">\n<section class=\"app_page\">\n  <h1>Queue</h1>\n  <ul class=\"action_group\">\n    <li><span role=\"button\" class=\"clear_queue\" tabindex=\"0\">Clear Queue</span></li>\n    <li><span role=\"button\" class=\"delete_selected\" tabindex=\"0\">Delete Selected</span></li>\n  </ul>\n  <div class=\"play_queue\">\n  </div>\n</section>\n</div>\n\n<div class=\"columns one-half\">\n<section class=\"app_page\">\n  <h1>Currently Playing</h1>\n  <p>Welcome to the JukePi. The currently playing queue is on the left and the play controls are situated above.</p>\n  <p>At some point, I'll do some lovely code to add track info and controls in here!</p>\n</section>\n</div>\n";});
+  return "<div class=\"columns one-half\">\n<section class=\"app_page home-lhs\">\n  <h1>Queue</h1>\n  <ul class=\"action_group\">\n    <li><span role=\"button\" class=\"clear_queue\" tabindex=\"0\">Clear Queue</span></li>\n    <li><span role=\"button\" class=\"delete_selected\" tabindex=\"0\">Delete Selected</span></li>\n  </ul>\n  <div class=\"play_queue\">\n  </div>\n</section>\n</div>\n\n<div class=\"columns one-half home-rhs\">\n<section class=\"app_page now_playing\">\n</section>\n<div class=\"app_page general_controls\">\n</div>\n</div>\n";});
+
+this["App"]["Templates"]["home_volume_control"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  helpers = helpers || Handlebars.helpers; data = data || {};
+  var buffer = "", stack1, stack2, functionType="function", self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1, foundHelper;
+  buffer += " value=\"";
+  foundHelper = helpers.volume;
+  if (foundHelper) { stack1 = foundHelper.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.volume; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\"";
+  return buffer;}
+
+  buffer += "<input type=\"button\" value=\"-\" name=\"volume_down\" class=\"volume_down\"><input type=\"text\" pattern=\"\\d*\" name=\"volume\" id=\"volume\"";
+  stack1 = depth0.volume;
+  stack2 = {};
+  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += " disabled=\"disabled\"><input type=\"button\" value=\"+\" name=\"volume_up\" class=\"volume_up\">\n";
+  return buffer;});
 
 this["App"]["Templates"]["main"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   helpers = helpers || Handlebars.helpers; data = data || {};
@@ -291,6 +314,46 @@ this["App"]["Templates"]["notification_list"] = Handlebars.template(function (Ha
   var buffer = "";
 
 
+  return buffer;});
+
+this["App"]["Templates"]["nowplaying_view"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  helpers = helpers || Handlebars.helpers; data = data || {};
+  var buffer = "", stack1, stack2, functionType="function", self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n<img src=\"";
+  stack1 = depth0.images;
+  stack1 = stack1 == null || stack1 === false ? stack1 : stack1[3];
+  stack1 = stack1 == null || stack1 === false ? stack1 : stack1.url;
+  stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1;
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\" alt=\"\" class=\"cover_art\">\n";
+  return buffer;}
+
+function program3(depth0,data) {
+  
+  var buffer = "", stack1, foundHelper;
+  buffer += "\n<div class=\"app_page_pad\">\n<p>";
+  foundHelper = helpers.name;
+  if (foundHelper) { stack1 = foundHelper.call(depth0, {hash:{},data:data}); }
+  else { stack1 = depth0.name; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "</p>\n</div>\n";
+  return buffer;}
+
+  buffer += "<h1>Now Playing</h1>\n";
+  stack1 = depth0.images;
+  stack2 = {};
+  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  stack1 = depth0.lastfm;
+  stack2 = {};
+  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(3, program3, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
   return buffer;});
 
 this["App"]["Templates"]["search_list"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
