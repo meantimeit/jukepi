@@ -38,34 +38,47 @@ App.Model.Search = Backbone.Model.extend({
   },
   _searchTimestamp: 0,
   _syncResponseToCollections: function (resp) {
-    if (resp[0] && resp[0].tracks && resp[0].tracks.length) {
-      this.localTracks.reset(resp[0].tracks);
+    var spotifyData = {};
+    var localData = [];
+    var r;
+
+    for (r = 0; r < resp.length; r++) {
+      if (resp[r] && resp[r].tracks && resp[r].tracks.length) {
+        if (resp[r].uri.match(/^file\:/)) {
+          localData = resp[r].tracks;
+        }
+        else if (resp[r].uri.match(/^spotify\:/)) {
+          spotifyData = resp[r];
+        }
+      }
+    }
+
+    if (localData.length) {
+      this.localTracks.reset(localData);
     }
     else {
       this.localTracks.reset();
     }
 
-    if (resp[1]) {
-      if (resp[1].tracks && resp[1].tracks.length) {
-        this.tracks.reset(resp[1].tracks);
-      }
-      else {
-        this.tracks.reset();
-      }
+    if (spotifyData.tracks && spotifyData.tracks.length) {
+      this.tracks.reset(spotifyData.tracks);
+    }
+    else {
+      this.tracks.reset();
+    }
 
-      if (resp[1].albums && resp[1].albums.length) {
-        this.albums.reset(resp[1].albums);
-      }
-      else {
-        this.albums.reset();
-      }
+    if (spotifyData.albums && spotifyData.albums.length) {
+      this.albums.reset(spotifyData.albums);
+    }
+    else {
+      this.albums.reset();
+    }
 
-      if (resp[1].artists && resp[1].artists.length) {
-        this.artists.reset(resp[1].artists);
-      }
-      else {
-        this.artists.reset();
-      }
+    if (spotifyData.artists && spotifyData.artists.length) {
+      this.artists.reset(spotifyData.artists);
+    }
+    else {
+      this.artists.reset();
     }
   }
 });

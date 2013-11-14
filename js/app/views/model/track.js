@@ -1,18 +1,18 @@
 App.View.Track = App.View.ModelView.extend({
   tagName: 'li',
   events: {
-    'dblclick li': 'addToTracklist',
-    'keydown li': 'toggleSelected'
+    'dblclick li': '_addToTracklist',
+    'keydown li': '_toggleSelected'
   },
   template: 'track_item',
   className: 'track_list_item',
   initialize: function (attributes, options) {
     App.View.ModelView.prototype.initialize.apply(this, arguments);
   },
-  addToTracklist: function (event) {
+  _addToTracklist: function (event) {
     this.model.save();
   },
-  toggleSelected: function (event) {
+  _toggleSelected: function (event) {
     var checkbox;
 
     if (this._extended && event.which === 32) {
@@ -28,7 +28,7 @@ App.View.TrackListTrack = App.View.ModelView.extend({
   template: 'tracklist_item',
   events: {
     'dblclick li': 'play',
-    'keydown li': 'play',
+    'keydown li': '_onKeydown',
     'dragstart li': '_onDragStart',
     'dragend li': '_onDragEnd',
     'drop li': '_onDrop',
@@ -49,6 +49,17 @@ App.View.TrackListTrack = App.View.ModelView.extend({
       this.mopidy.playback.play(this.model.attributes);
     }
   },
+  _onKeydown: function (event) {
+    var enterKey = event.which === 13;
+    var spaceKey = event.which === 32;
+
+    if (enterKey) {
+      this._play(event);
+    }
+    else if (spaceKey) {
+      this._toggleSelected(event);
+    }
+  },
   _onRendered: function () {
     this._enableDraggableOnElement();
     this._toggleCurrentTrackIfCurrent();
@@ -64,6 +75,11 @@ App.View.TrackListTrack = App.View.ModelView.extend({
       this.$el.removeClass('current_track');
     }
   },
+  _toggleSelected: function (event) {
+    var checkbox = this.$('input[type=checkbox]')[0];
+    checkbox.checked = !checkbox.checked;
+    event.preventDefault();
+  },
   _onDragStart: function (event) {
     event.dataTransfer.setData('track_index', this.model.collection.indexOf(this.model));
   },
@@ -71,15 +87,19 @@ App.View.TrackListTrack = App.View.ModelView.extend({
     this.$el.removeClass('dragover');
   },
   _onDrop: function (event) {
-    var index = +event.dataTransfer.getData('track_index');
-    var sourceTrack = this.model.collection.at(index);
-    var targetIndex = this.model.collection.indexOf(this.model);
-    var newIndex = targetIndex + (targetIndex < index ? 1 : 0);
+    var index, sourceTrack, targetIndex, newIndex;
 
-    this.$el.removeClass('current_track');
+    if (this.model && this.model.collection) {
+      index = +event.dataTransfer.getData('track_index');
+      sourceTrack = this.model.collection.at(index);
+      targetIndex = this.model.collection.indexOf(this.model);
+      newIndex = targetIndex + (targetIndex < index ? 1 : 0);
 
-    if (index !== targetIndex) {
-      this.model.collection.move(sourceTrack, newIndex);
+      this.$el.removeClass('current_track');
+
+      if (index !== targetIndex) {
+        this.model.collection.move(sourceTrack, newIndex);
+      }
     }
   },
   _onDragEnter: function (event) {
