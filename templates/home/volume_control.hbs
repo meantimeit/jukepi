@@ -1,1 +1,1 @@
-<input type="button" value="-" name="volume_down" class="volume_down"><input type="text" pattern="\d*" name="volume" id="volume"{{#if volume}} value="{{{volume}}}"{{/if}} disabled="disabled"><input type="button" value="+" name="volume_up" class="volume_up">
+<span class="volume_control_down volume_down">Down</span><span class="volume_level">{{#if volume}} {{{volume}}}{{^}}-{{/if}}</span><span role="button" class="volume_control_up volume_up">Up</span>

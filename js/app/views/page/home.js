@@ -64,9 +64,8 @@ App.View.HomePage = App.View.PageView.extend({
       extended: true
     });
     this.views.nowPlaying = new App.View.NowPlaying({
-      tlTrack: { tlTrack: this._trackList.current() ? this._trackList.current().toJSON() : null }
+      tlTrack: this._trackList.current() ? this._trackList.current().toJSON() : null 
     });
-    this.views.volumeControl = new App.View.VolumeControl();
   },
   _initTrackList: function () {
     this._trackList = App.tracklist;
@@ -77,7 +76,6 @@ App.View.HomePage = App.View.PageView.extend({
   _attachSubViews: function () {
     this.$('.play_queue').append(this.views.trackList.render().el);
     this.$('.now_playing').append(this.views.nowPlaying.render().el);
-    this.$('.general_controls').append(this.views.volumeControl.render().el);
   },
   _trackList: null
 });

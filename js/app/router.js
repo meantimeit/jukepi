@@ -7,6 +7,7 @@ App.Router = Backbone.Router.extend({
     '': 'dashboard',
     'albums/:id': 'albums',
     'artists/:uri/:name': 'artists',
+    'search/:query': 'search',
     'auth': 'auth',
     'dashboard': 'dashboard'
   },
@@ -47,6 +48,16 @@ App.Router = Backbone.Router.extend({
       name: name
     });
     App.mainNavigation.setCurrent('artists');
+    App.utils.appendToMain(view.render().el);
+  },
+  search: function (query) {
+    this.trigger('beforeRoute');
+    var view = new App.View.SearchPage({
+      router: this,
+      query: query,
+      model: new App.Model.Search()
+    });
+    App.mainNavigation.setCurrent('search');
     App.utils.appendToMain(view.render().el);
   },
   _authCheck: function (currentRoute) {

@@ -233,20 +233,24 @@ this["App"]["Templates"]["home_volume_control"] = Handlebars.template(function (
 function program1(depth0,data) {
   
   var buffer = "", stack1, foundHelper;
-  buffer += " value=\"";
+  buffer += " ";
   foundHelper = helpers.volume;
   if (foundHelper) { stack1 = foundHelper.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.volume; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\"";
   return buffer;}
 
-  buffer += "<input type=\"button\" value=\"-\" name=\"volume_down\" class=\"volume_down\"><input type=\"text\" pattern=\"\\d*\" name=\"volume\" id=\"volume\"";
+function program3(depth0,data) {
+  
+  
+  return "-";}
+
+  buffer += "<span class=\"volume_control_down volume_down\">Down</span><span class=\"volume_level\">";
   stack1 = depth0.volume;
   stack2 = {};
-  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += " disabled=\"disabled\"><input type=\"button\" value=\"+\" name=\"volume_up\" class=\"volume_up\">\n";
+  buffer += "</span><span role=\"button\" class=\"volume_control_up volume_up\">Up</span>\n";
   return buffer;});
 
 this["App"]["Templates"]["main"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -261,7 +265,7 @@ this["App"]["Templates"]["navigation_controls"] = Handlebars.template(function (
   
 
 
-  return "<span class=\"nav_main_back\" role=\"button\">Back</span>\n<span class=\"nav_main_play\" role=\"button\">Play</span>\n<span class=\"nav_main_pause\" role=\"button\">Pause</span>\n<span class=\"nav_main_next\" role=\"button\">Next</span>\n<span class=\"nav_main_search\"><input type=\"search\" id=\"mopidy_search\" size=\"24\"></span>\n";});
+  return "<span class=\"nav_main_search\"><input type=\"search\" id=\"mopidy_search\" size=\"24\"></span>\n<span class=\"nav_main_back\" role=\"button\">Back</span>\n<span class=\"nav_main_play\" role=\"button\">Play</span>\n<span class=\"nav_main_pause\" role=\"button\">Pause</span>\n<span class=\"nav_main_next\" role=\"button\">Next</span>\n<span class=\"nav_main_volume\"></span>\n";});
 
 this["App"]["Templates"]["navigation_menu"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   helpers = helpers || Handlebars.helpers; data = data || {};
@@ -291,11 +295,12 @@ function program2(depth0,data) {
   
   return " class=\"current\"";}
 
+  buffer += "<div class=\"columns six page_controls\">\n<ul>\n";
   stack1 = depth0.items;
   stack2 = {};
   stack1 = helpers.each.call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(1, program1, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n";
+  buffer += "\n</ul>\n</div>\n<div class=\"columns six navigation_controls\">\n</div>\n";
   return buffer;});
 
 this["App"]["Templates"]["notification_item"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
@@ -320,48 +325,51 @@ this["App"]["Templates"]["nowplaying_view"] = Handlebars.template(function (Hand
   helpers = helpers || Handlebars.helpers; data = data || {};
   var buffer = "", stack1, stack2, functionType="function", self=this;
 
-function program1(depth0,data) {
+function program1(depth0,data,depth1) {
   
-  var buffer = "", stack1;
-  buffer += "\n<img src=\"";
-  stack1 = depth0.images;
-  stack1 = stack1 == null || stack1 === false ? stack1 : stack1[3];
-  stack1 = stack1 == null || stack1 === false ? stack1 : stack1.url;
-  stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1;
+  var buffer = "", stack1, stack2, foundHelper;
+  buffer += "\n<h1>Now Playing</h1>\n<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"columns four\">\n      ";
+  stack1 = depth1.images;
+  stack2 = {};
+  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(2, program2, data),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\" alt=\"\" class=\"cover_art\">\n";
-  return buffer;}
-
-function program3(depth0,data) {
-  
-  var buffer = "", stack1, foundHelper;
-  buffer += "\n<div class=\"app_page_pad\">\n<p>";
+  buffer += "\n    </div>\n    <div class=\"columns eight\">\n      <div class=\"app_page_pad\">\n        <p>";
   foundHelper = helpers.name;
   if (foundHelper) { stack1 = foundHelper.call(depth0, {hash:{},data:data}); }
   else { stack1 = depth0.name; stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1; }
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "</p>\n</div>\n";
+  buffer += "<br />";
+  stack1 = depth0.lastfm;
+  stack1 = stack1 == null || stack1 === false ? stack1 : stack1.artist;
+  stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1;
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "</p>\n      </div>\n    </div>\n  </div>\n</div>\n";
+  return buffer;}
+function program2(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n      <img src=\"";
+  stack1 = depth0.images;
+  stack1 = stack1 == null || stack1 === false ? stack1 : stack1[2];
+  stack1 = stack1 == null || stack1 === false ? stack1 : stack1.url;
+  stack1 = typeof stack1 === functionType ? stack1.apply(depth0) : stack1;
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\" alt=\"\" class=\"cover_art\">\n      ";
   return buffer;}
 
-  buffer += "<h1>Now Playing</h1>\n";
-  stack1 = depth0.images;
-  stack2 = {};
-  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n";
   stack1 = depth0.lastfm;
   stack2 = {};
-  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.program(3, program3, data),data:data});
+  stack1 = helpers['if'].call(depth0, stack1, {hash:stack2,inverse:self.noop,fn:self.programWithDepth(program1, data, depth0),data:data});
   if(stack1 || stack1 === 0) { buffer += stack1; }
   buffer += "\n";
   return buffer;});
 
-this["App"]["Templates"]["search_list"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+this["App"]["Templates"]["search_page"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   helpers = helpers || Handlebars.helpers; data = data || {};
   
 
 
-  return "<div class=\"scrolling_container\">\n  <div class=\"row\">\n    <section class=\"search_results_albums columns six\"><h1>Albums</h1></section>\n    <section class=\"search_results_artists columns six\"><h1>Artists</h1></section>\n  </div>\n  <div class=\"row\">\n    <section class=\"search_results_tracks columns six\"><h1>Tracks</h1></section>\n    <section class=\"search_results_localtracks columns six\"><h1>Local Tracks</h1></section>\n  </div>\n</div>\n";});
+  return "<div class=\"columns one-half\">\n<section class=\"app_page search_results_albums\">\n<h1>Albums</h1>\n</section>\n<section class=\"app_page search_results_artists\">\n<h1>Artists</h1>\n</section>\n</div>\n\n<div class=\"columns one-half\">\n<section class=\"app_page search_results_tracks\">\n<h1>Tracks</h1>\n</section>\n<section class=\"app_page search_results_localtracks\">\n<h1>Local Tracks</h1>\n</section>\n</div>\n";});
 
 this["App"]["Templates"]["track_index"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   helpers = helpers || Handlebars.helpers; data = data || {};

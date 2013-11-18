@@ -11,6 +11,13 @@ App.View.NowPlaying = App.View.CoreView.extend({
         this._updateTrack(attributes.tlTrack);
       }.bind(this));
     }
+    else {
+      App.mopidy.playback.getCurrentTlTrack().then(function (track) {
+        if (track) {
+          this._updateTrack({ tl_track: track });
+        }
+      }.bind(this));
+    }
   },
   remove: function () {
     App.View.CoreView.prototype.remove.apply(this, arguments);

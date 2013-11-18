@@ -44,7 +44,7 @@ App.Model.Search = Backbone.Model.extend({
 
     for (r = 0; r < resp.length; r++) {
       if (resp[r] && resp[r].tracks && resp[r].tracks.length) {
-        if (resp[r].uri.match(/^file\:/)) {
+        if (resp[r].uri.match(/^local\:/)) {
           localData = resp[r].tracks;
         }
         else if (resp[r].uri.match(/^spotify\:/)) {

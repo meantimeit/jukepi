@@ -24,6 +24,7 @@ App.Router = Backbone.Router.extend({
     '': 'dashboard',
     'albums/:id': 'albums',
     'artists/:uri/:name': 'artists',
+    'search/:query': 'search',
     'auth': 'auth',
     'dashboard': 'dashboard'
   },
@@ -64,6 +65,16 @@ App.Router = Backbone.Router.extend({
       name: name
     });
     App.mainNavigation.setCurrent('artists');
+    App.utils.appendToMain(view.render().el);
+  },
+  search: function (query) {
+    this.trigger('beforeRoute');
+    var view = new App.View.SearchPage({
+      router: this,
+      query: query,
+      model: new App.Model.Search()
+    });
+    App.mainNavigation.setCurrent('search');
     App.utils.appendToMain(view.render().el);
   },
   _authCheck: function (currentRoute) {
@@ -236,7 +247,7 @@ App.Model.Artist = Backbone.Model.extend({
         }.bind(this);
 
         App.lastfm.artist.getInfo({ artist: artistName }, { success: processLastfm, error: lastfmError });
-        App.mopidy.library.search({ artist: artistName }, ['file:']).then(processSearch, searchError);
+        App.mopidy.library.search({ artist: artistName }, ['local:']).then(processSearch, searchError);
         xhr = App.mopidy.library.lookup(this.id);
         xhr.then(processLookup, options.error);
 
@@ -301,7 +312,7 @@ App.Model.Search = Backbone.Model.extend({
 
     for (r = 0; r < resp.length; r++) {
       if (resp[r] && resp[r].tracks && resp[r].tracks.length) {
-        if (resp[r].uri.match(/^file\:/)) {
+        if (resp[r].uri.match(/^local\:/)) {
           localData = resp[r].tracks;
         }
         else if (resp[r].uri.match(/^spotify\:/)) {
@@ -1086,9 +1097,8 @@ App.View.HomePage = App.View.PageView.extend({
       extended: true
     });
     this.views.nowPlaying = new App.View.NowPlaying({
-      tlTrack: { tlTrack: this._trackList.current() ? this._trackList.current().toJSON() : null }
+      tlTrack: this._trackList.current() ? this._trackList.current().toJSON() : null 
     });
-    this.views.volumeControl = new App.View.VolumeControl();
   },
   _initTrackList: function () {
     this._trackList = App.tracklist;
@@ -1099,9 +1109,83 @@ App.View.HomePage = App.View.PageView.extend({
   _attachSubViews: function () {
     this.$('.play_queue').append(this.views.trackList.render().el);
     this.$('.now_playing').append(this.views.nowPlaying.render().el);
-    this.$('.general_controls').append(this.views.volumeControl.render().el);
   },
   _trackList: null
+});
+
+App.View.SearchPage = App.View.PageView.extend({
+  tagName: 'div',
+  className: 'view',
+  title: 'Search',
+  template: 'search_page',
+  events: {
+    'click .queue_all': 'queueAll',
+    'click .queue_all_local': 'queueAllLocal',
+    'click .queue_selected': 'queueSelected',
+    'click [data-album-uri]': 'viewAlbum'
+  },
+  initialize: function (attributes, options) {
+    App.View.PageView.prototype.initialize.apply(this, arguments);
+    this.model = attributes.model;
+    this._initSubViews();
+    this.on('rendered', function () {
+      this.$('.search_results_tracks').append(this.views.tracks.render().el);
+      this.$('.search_results_localtracks').append(this.views.localTracks.render().el);
+      this.$('.search_results_albums').append(this.views.albums.render().el);
+      this.$('.search_results_artists').append(this.views.artists.render().el);
+    }.bind(this));
+    this.model.fetch({ query: attributes.query });
+  },
+  resetResults: function () {
+    this.views.albums.resetResults();
+    this.views.artists.resetResults();
+    this.views.tracks.resetResults();
+    this.views.localTracks.resetResults();
+  },
+  queueAll: function () {
+    App.mopidy.tracklist.add(this.album.tracks.toJSON()).then(function () {
+      App.notifications.add({message: 'Added tracks to queue'});
+    });
+  },
+  queueAllLocal: function () {
+    App.mopidy.tracklist.add(this.album.localTracks.toJSON()).then(function () {
+      App.notifications.add({message: 'Added tracks to queue'});
+    });
+  },
+  queueSelected: function () {
+    var selectedInputs = this.$('li input[type=checkbox]:checked');
+    var selectedTracks = selectedInputs.map(function (i, track) {
+      return this.artist.tracks.get(track.getAttribute('data-track-id')).toJSON();
+    }.bind(this));
+    App.mopidy.tracklist.add(selectedTracks).then(function () {
+      selectedInputs.each(function (i, input) {
+        input.checked = false;
+      });
+      App.notifications.add({ message: 'Tracks added to queue.' });
+    }.bind(this));
+  },
+  viewAlbum: function (event) {
+    var uri = event.currentTarget.getAttribute('data-album-uri');
+
+    event.preventDefault();
+    App.router.navigate('/album/' + uri, { trigger: true });
+  },
+  _initSubViews: function () {
+    this.views = {
+      tracks: new App.View.Tracks({
+        collection: this.model.tracks
+      }),
+      localTracks: new App.View.Tracks({
+        collection: this.model.localTracks
+      }),
+      albums: new App.View.Albums({
+        collection: this.model.albums
+      }),
+      artists: new App.View.Artists({
+        collection: this.model.artists
+      })
+    };
+  }
 });
 
 App.View.ChatView = App.View.CoreView.extend({
@@ -1240,7 +1324,7 @@ App.View.LoginView = App.View.PageView.extend({
 });
 
 App.View.Navigation = App.View.CoreView.extend({
-  tagName: 'ul',
+  tagName: 'div',
   events: {
     'click a': '_navigateToUrl',
     'click .nav_main_next': 'nextTrack',
@@ -1254,19 +1338,15 @@ App.View.Navigation = App.View.CoreView.extend({
     this.models = {};
     this.items = attributes.menu;
     this._current = attributes.current === undefined ? null : attributes.current;
-    this.models = {
-      search: new App.Model.Search()
-    };
     this.views = {
-      search: new App.View.Search({
-        model: this.models.search
-      }),
-      controls: new App.View.Controls()
+      controls: new App.View.Controls(),
+      volumeControl: new App.View.VolumeControl()
     };
     this.on('rendered', function () {
-      this.$el.append(this.views.controls.render().el);
+      var $ul = $('<ul></ul>').append(this.views.controls.render().el);
+      this.$('.columns.six').eq(1).html($ul);
+      $ul.find('.nav_main_volume').append(this.views.volumeControl.render().el);
     }.bind(this));
-    $('#search').append(this.views.search.render().el);
   },
   render: function () {
     this.trigger('rendering');
@@ -1295,30 +1375,11 @@ App.View.Navigation = App.View.CoreView.extend({
     var query = event.currentTarget.value;
 
     if (event.which === 13) {
-      if (query === '') {
-        this._searchQuery = '';
-        this._cancelSearch();
-        this.views.search.$el.addClass('hidden');
-        $('#search').addClass('hidden');
-      }
-      else if (query !== this._searchQuery) {
-        this._searchQuery = query;
-        this._cancelSearch();
-        this.views.search.resetResults();
-        this.views.search.$el.removeClass('hidden');
-        $('#search').removeClass('hidden');
-        this._searchPromise = this.models.search.fetch({ query: query });
-      }
-      else if (query === this._searchQuery) {
-        this.views.search.$el.removeClass('hidden');
-        $('#search').removeClass('hidden');
+      if (query !== '') {
+        App.router.navigate('search/' + query, { trigger: true });
       }
     }
-    else if (query === '') {
-      this._cancelSearch();
-      this.views.search.$el.addClass('hidden');
-        $('#search').addClass('hidden');
-    }
+    
   },
   _cancelSearch: function () {
     if (typeof this._searchPromise === 'function') {
@@ -1355,6 +1416,13 @@ App.View.NowPlaying = App.View.CoreView.extend({
         this._updateTrack(attributes.tlTrack);
       }.bind(this));
     }
+    else {
+      App.mopidy.playback.getCurrentTlTrack().then(function (track) {
+        if (track) {
+          this._updateTrack({ tl_track: track });
+        }
+      }.bind(this));
+    }
   },
   remove: function () {
     App.View.CoreView.prototype.remove.apply(this, arguments);
@@ -1376,48 +1444,8 @@ App.View.NowPlaying = App.View.CoreView.extend({
   }
 });
 
-App.View.Search = App.View.CoreView.extend({
-  tagName: 'div',
-  className: 'search_results_list triangle_border_top hidden',
-  template: 'search_list',
-  initialize: function (attributes, options) {
-    App.View.CoreView.prototype.initialize.apply(this, arguments);
-    this.model = attributes.model;
-    this.views = {
-      tracks: new App.View.Tracks({
-        collection: this.model.tracks
-      }),
-      localTracks: new App.View.Tracks({
-        collection: this.model.localTracks
-      }),
-      albums: new App.View.Albums({
-        collection: this.model.albums
-      }),
-      artists: new App.View.Artists({
-        collection: this.model.artists
-      })
-    };
-    this.on('rendered', function () {
-      this.$('.search_results_tracks').append(this.views.tracks.render().el);
-      this.$('.search_results_localtracks').append(this.views.localTracks.render().el);
-      this.$('.search_results_albums').append(this.views.albums.render().el);
-      this.$('.search_results_artists').append(this.views.artists.render().el);
-    }.bind(this));
-    this.listenTo(App.router, 'beforeRoute', function () {
-      $('#search').addClass('hidden');
-      this.$el.addClass('hidden');
-    }.bind(this));
-  },
-  resetResults: function () {
-    this.views.albums.resetResults();
-    this.views.artists.resetResults();
-    this.views.tracks.resetResults();
-    this.views.localTracks.resetResults();
-  }
-});
-
 App.View.VolumeControl = App.View.CoreView.extend({
-  tagName: 'div',
+  tagName: 'span',
   className: 'volume_control',
   template: 'home_volume_control',
   events: {
@@ -1457,7 +1485,7 @@ App.View.VolumeControl = App.View.CoreView.extend({
     App.mopidy.playback.setVolume(volume).always(this._enableVolumeControl.bind(this));
   },
   _updateVolumeControl: function () {
-    this.$('[type=text]').val(this._volumeLevel);
+    this.$('.volume_level').text(this._volumeLevel);
   },
   _disableVolumeControl: function () {
     this.$('[type=text]').disabled = true;

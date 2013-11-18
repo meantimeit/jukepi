@@ -1,5 +1,5 @@
 App.View.VolumeControl = App.View.CoreView.extend({
-  tagName: 'div',
+  tagName: 'span',
   className: 'volume_control',
   template: 'home_volume_control',
   events: {
@@ -39,7 +39,7 @@ App.View.VolumeControl = App.View.CoreView.extend({
     App.mopidy.playback.setVolume(volume).always(this._enableVolumeControl.bind(this));
   },
   _updateVolumeControl: function () {
-    this.$('[type=text]').val(this._volumeLevel);
+    this.$('.volume_level').text(this._volumeLevel);
   },
   _disableVolumeControl: function () {
     this.$('[type=text]').disabled = true;

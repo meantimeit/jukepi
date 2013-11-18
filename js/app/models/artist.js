@@ -71,7 +71,7 @@ App.Model.Artist = Backbone.Model.extend({
         }.bind(this);
 
         App.lastfm.artist.getInfo({ artist: artistName }, { success: processLastfm, error: lastfmError });
-        App.mopidy.library.search({ artist: artistName }, ['file:']).then(processSearch, searchError);
+        App.mopidy.library.search({ artist: artistName }, ['local:']).then(processSearch, searchError);
         xhr = App.mopidy.library.lookup(this.id);
         xhr.then(processLookup, options.error);
 

@@ -1,5 +1,5 @@
 App.View.Navigation = App.View.CoreView.extend({
-  tagName: 'ul',
+  tagName: 'div',
   events: {
     'click a': '_navigateToUrl',
     'click .nav_main_next': 'nextTrack',
@@ -13,19 +13,15 @@ App.View.Navigation = App.View.CoreView.extend({
     this.models = {};
     this.items = attributes.menu;
     this._current = attributes.current === undefined ? null : attributes.current;
-    this.models = {
-      search: new App.Model.Search()
-    };
     this.views = {
-      search: new App.View.Search({
-        model: this.models.search
-      }),
-      controls: new App.View.Controls()
+      controls: new App.View.Controls(),
+      volumeControl: new App.View.VolumeControl()
     };
     this.on('rendered', function () {
-      this.$el.append(this.views.controls.render().el);
+      var $ul = $('<ul></ul>').append(this.views.controls.render().el);
+      this.$('.columns.six').eq(1).html($ul);
+      $ul.find('.nav_main_volume').append(this.views.volumeControl.render().el);
     }.bind(this));
-    $('#search').append(this.views.search.render().el);
   },
   render: function () {
     this.trigger('rendering');
@@ -54,30 +50,11 @@ App.View.Navigation = App.View.CoreView.extend({
     var query = event.currentTarget.value;
 
     if (event.which === 13) {
-      if (query === '') {
-        this._searchQuery = '';
-        this._cancelSearch();
-        this.views.search.$el.addClass('hidden');
-        $('#search').addClass('hidden');
-      }
-      else if (query !== this._searchQuery) {
-        this._searchQuery = query;
-        this._cancelSearch();
-        this.views.search.resetResults();
-        this.views.search.$el.removeClass('hidden');
-        $('#search').removeClass('hidden');
-        this._searchPromise = this.models.search.fetch({ query: query });
-      }
-      else if (query === this._searchQuery) {
-        this.views.search.$el.removeClass('hidden');
-        $('#search').removeClass('hidden');
+      if (query !== '') {
+        App.router.navigate('search/' + query, { trigger: true });
       }
     }
-    else if (query === '') {
-      this._cancelSearch();
-      this.views.search.$el.addClass('hidden');
-        $('#search').addClass('hidden');
-    }
+    
   },
   _cancelSearch: function () {
     if (typeof this._searchPromise === 'function') {
