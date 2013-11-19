@@ -71,7 +71,7 @@ App.Router = Backbone.Router.extend({
     this.trigger('beforeRoute');
     var view = new App.View.SearchPage({
       router: this,
-      query: query,
+      query: decodeURI(query),
       model: new App.Model.Search()
     });
     App.mainNavigation.setCurrent('search');
