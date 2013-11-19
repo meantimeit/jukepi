@@ -71,7 +71,7 @@ App.Router = Backbone.Router.extend({
     this.trigger('beforeRoute');
     var view = new App.View.SearchPage({
       router: this,
-      query: query,
+      query: decodeURI(query),
       model: new App.Model.Search()
     });
     App.mainNavigation.setCurrent('search');
@@ -282,6 +282,7 @@ App.Model.Search = Backbone.Model.extend({
 
     this._searchTimestamp = timestamp;
 
+    console.log(decodeURI(options.query));
     options.success = function(resp) {
       if (timestamp === this._searchTimestamp) {
         if (success) {
