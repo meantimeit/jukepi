@@ -1,0 +1,9 @@
+<h1>{{name}}</h1>
+{{#if images}}
+<img src="{{{images.4.url}}}" alt="Artist image" class="cover_art">
+{{/if}}
+{{#if lastfm}}
+<div class="view-section-pad">
+<p>{{{lastfm.bio.content}}}</p>
+</div>
+{{/if}}
