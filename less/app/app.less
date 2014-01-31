@@ -3,12 +3,12 @@
 @import "../elements/elements";
 @import "mixins";
 
-@containerMaxWidth:          96%; // set this to the maximum width you want .container to have
+@containerMaxWidth:          100%; // set this to the maximum width you want .container to have
 
 html {
   height: 100%;
   overflow: auto;
-  background: #efefef;
+  background: rgb(36,171,217);
 }
 
 body {
@@ -39,20 +39,56 @@ span.pink {
   .fadeOut();
 }
 .opaque {
-  background-color: rgba(255,255,255,.5);
-  .rounded(.5em);
-  background-clip: padding-box;
-  -moz-background-clip: padding-box;
-  -webkit-background-clip: padding-box;
+  background-color: rgba(255,255,255,1);
+  -webkit-box-shadow: 0 0 8px #fff;
+  -moz-box-shadow: 0 0 8px #fff;
+  box-shadow: 0 0 8px #fff;
+}
+.action-toolbar {
+  border-bottom: solid 1px #fafafa;
+  list-style: none inside;
+  padding: .4375em .875em .5em;
+  margin: 0 0 .125em;
+  input[type=checkbox] {
+    margin: 0;
+  }
+  li {
+    display: inline-block;
+    span {
+      display: inline-block;
+      .rounded(.125em);
+      line-height: 1.5;
+      .bw-gradient(#eee, 187, 238);
+      border: outset 1px rgba(187,187,187,.5);
+      padding: 0 .25em;
+      &:active {
+        border-style: inset;
+      }
+    }
+  }
+}
+.view-model {
+  padding: 1em 1em 0;
+  overflow: auto;
 
-  h1 {
-    background-clip: padding-box;
-    background-color: rgba(255,255,255,.7);
-    color: #000;
-    -moz-background-clip: padding-box;
-    -webkit-background-clip: padding-box;
-    .border-radius(.5em, 0, 0 .5em);
-    opacity: .7;
+  & + .view-list, & + .interactive-list {
+    & > .action-toolbar {
+      padding-top: 0;
+    }
+  }
+  & + .view-list:before, & + .interactive-list:before {
+    margin-top: .5em;
+    margin-bottom: .5em;
+    display: block;
+    content: '';
+    border-top: solid 1px #f1f1f1;
+  }
+}
+.view-model-link {
+  padding-bottom: 1em;
+  a {
+    color: #444;
+    text-decoration: none;
   }
 }
 .view-section {
@@ -70,23 +106,36 @@ span.pink {
   }
 }
 
+.tab-view-section-tab {
+  padding: .125em 0 0;
+}
+
 .view-section-pad {
   margin: 0 .75em 0;
 }
 
 [role="tablist"] {
+  cursor: pointer;
   list-style: none inside ;
+  margin-bottom: 0;
   padding: 0;
 
   [role~="tab"] {
     display: inline-block;
     line-height: 2;
     padding: 0 0.5em;
-
+    &:focus, &:active {
+      outline: none;
+      color: #d9214d;
+    }
   }
   [role~="tab"][tabindex~="0"] {
-    background-color: #444;
-    color: #fff;
+    background-color: #fff;
+    color: #000;
+    &:focus, &:active {
+      outline: none;
+      color: #d9214d;
+    }
   }
 }
 
@@ -179,8 +228,8 @@ input[type=search] {
 
 .interactive-list {
   list-style: none inside ;
-  margin: 0 0 .125em;
-  padding: 0 .125em;
+  margin: 0 ;
+  padding: 0 .125em .125em;
   .box-sizing(border-box);
   .interactive-list-item {
     span {
@@ -249,52 +298,16 @@ input[type=search] {
   &.loading {
     padding-top: .9375em;
     background: transparent url(~"../img/loading.gif") no-repeat top center;
-    .empty_list {
+    .empty-list {
       display: none;
     }
   }
 }
 
-.action-toolbar {
-  background-color: rgba(0,0,0,.1);
-  list-style: none inside;
-  padding: .25em .5em;
-  margin: 0 0 .125em;
-  li {
-    display: inline-block;
-    span {
-      display: inline-block;
-      .rounded(.125em);
-      line-height: 1.5;
-      .bw-gradient(#eee, 187, 238);
-      border: outset 1px rgba(187,187,187,.5);
-      padding: 0 .25em;
-      &:active {
-        border-style: inset;
-      }
-    }
-  }
-}
 
-.action_url {
-  color: #444;
-  text-decoration: none;
-  padding: .25em;
-}
-
-h1 + .action-toolbar {
-  margin-top: -.125em;
-}
-
-.cover_art {
-  max-width: 100%;
-  /*margin: 0 auto .125em;*/
-  display: block;
-
-}
-
-h1 + .cover_art {
-  margin-top: -.125em;
+.cover-art {
+  float: left;
+  margin-right: .5em;
 }
 
 .playback-controls {
