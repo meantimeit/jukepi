@@ -10,43 +10,27 @@ The application is a bespoke application with data models built upon Backbone. E
 
 ## Installation Instructions
 
-At present, this web application requires a number of steps to get started, including git submodules, grunt and several npm installs. You will need node to get started with this project. In an up-coming release, I will move many of the git submodules over to npm modules, use browserify and create a single installation command to take care of all of the packages.
+To install, you only need the build directory. The build directory contains the files needed by Mopidy. The index.html file will need to be modified with your custom configuration. If your Mopidy installation is fairly vanilla, you may remove the webSocketUrl option from the index.html file as it will not be necessary.
 
-Until then:
+## Developer Instructions
 
-Clone the project like so:
+To work on this project, you will need to have the node and npm binaries installed. Clone the project:
 
     git clone git://github.com/meantimeit/jukepi.git && cd jukepi && git submodule update --init --recursive
 
-Once complete, you will need to install the npm modules:
+Once complete, you will need to install the necessary npm packages:
 
     npm install
 
-Then you'll need to build Zepto (I do apologise that you'll need ruby installed too):
+During the course of development, you will need to re-create the build files. There are a number of scripts that will enable you to do this:
 
-    cd js/zepto
-    gem install uglifier
-    rake
-
-Then you will need to run Grunt to ensure that all of the jukepi assets are built
-
-    cd ../..
-    grunt
-
-At which point, you will have a build directory that contains everything that you need. Update your Mopidy configuration to point to the build directory or move the contents of the build directory to your web client location.
-
-Once we pass the alpha stage of development, official releases will become available to download from the project website (not yet built!) so that you can skip all of the ceremony.
+ * `npm run build-debug-js` - Create a debug build of the JS
+ * `npm run build-debug-css` - Create a debug build of the CSS
+ * `npm run build-debug` - Create a debug build of the JS and CSS
+ * `npm run build-js` - Build the JS
+ * `npm run build-css` - Build the CSS
+ * `npm run build` - Build a release
 
 ## Screenshots
 
 Coming soon™
-
-## Javascript Libraries
-
-The JukePi application runs on Javascript and makes use of a number of libraries which I would like to acknowledge:
-
-* [Backbone](http://backbonejs.org) [(Github)](https://github.com/documentcloud/backbone): a bare bones application scaffolding that provided the starting point for the rest of the project.
-* [Zepto](http://zeptojs.com) [(Github)](https://github.com/madrobby/zepto): a jQuery compatible library that Backbone uses to perform DOM manipulation.
-* [Grunt](http://gruntjs.com) [(Github)](https://github.com/gruntjs): a Javascript task runner that allows the JukePi source to be kept in a modular format and then automatically built and packaged for deployment. A number of plugins are used to compile the Handlebars templates and Less stylesheets
-* [Handlebars](http://handlebarsjs.com) [(Github)](https://github.com/wycats/handlebars.js): a Javascript template library that the application uses to render reusable templates for the various types of information (albums, tracks, artists) and also to generally render the necessary pages of the application.
-* [LESS](http://lesscss.org) [(Github)](https://github.com/cloudhead/less.js): A dynamic extension of CSS that allows for the use of special features to aid CSS organisation and enhancement.

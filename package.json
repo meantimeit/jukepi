@@ -1,29 +1,30 @@
 {
   "name": "jukepi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Raspberry Pi Mopidy Jukebox Frontend",
   "main": "index.js",
   "scripts": {
     "build": "npm run build-js && npm run build-css",
     "build-js": "browserify -s jukePi lib/app.js | uglifyjs > build/js/app.js",
-    "build-css": "lessc --strict-imports -x less/app/app.less > build/css/app.css",
+    "build-css": "lessc --strict-imports -x less/app.less > build/css/app.css",
     "build-debug": "npm run build-debug-js && npm run build-debug-css",
     "build-debug-js": "browserify -d -s jukePi lib/app.js > build/js/app.js",
-    "build-debug-css": "lessc --strict-imports less/app/app.less > build/css/app.css",
+    "build-debug-css": "lessc --strict-imports --source-map-map-inline less/app.less > build/css/app.css",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "",
   "author": "",
   "license": "MIT",
   "dependencies": {
+  },
+  "devDependencies": {
+    "bootstrap": "git://github.com/twbs/bootstrap.git",
     "backbone": "~1.1.0",
     "marked": "~0.2.10",
     "mopidy": "~0.2.0",
     "browserify-handlebars": "~0.2.0",
     "browserified-lastfm-api": "git://github.com/meantimeit/browserified-lastfm-api.git",
-    "handlebars": "~1.3.0"
-  },
-  "devDependencies": {
+    "handlebars": "~1.3.0",
     "browserify": "~3.24.1",
     "less": "~1.6.1"
   },

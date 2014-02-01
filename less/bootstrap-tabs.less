@@ -1,0 +1,29 @@
+[role="tablist"] {
+  .user-select(none);
+  cursor: pointer;
+  list-style: none inside ;
+  margin-bottom: 0;
+  padding: 0;
+
+  [role~="tab"] {
+    display: inline-block;
+    line-height: 2;
+    padding: 0 0.5em;
+    &:focus, &:active {
+      outline: none;
+      color: @brand-primary;
+    }
+  }
+  [role~="tab"][tabindex~="0"] {
+    background-color: #fff;
+    color: #000;
+    &:focus, &:active {
+      outline: none;
+      color: @brand-primary;
+    }
+  }
+}
+
+[role="tabpanel"][aria-hidden="true"] {
+  display: none;
+}
