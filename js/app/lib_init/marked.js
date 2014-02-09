@@ -1,3 +1,0 @@
-marked.setOptions({
-  gfm: true
-});

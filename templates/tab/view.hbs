@@ -1,0 +1,5 @@
+<ul role="tablist">
+  {{#each tabs}}
+  <li id="tab-{{../baseName}}-{{@index}}" role="tab" aria-controls="panel-{{../baseName}}-{{@index}}" tabindex="{{#if @first}}0{{^}}-1{{/if}}">{{this}}</li>
+  {{/each}}
+</ul>

@@ -1,17 +1,10 @@
-{{#if lastfm}}
-<h1>Now Playing</h1>
-<div class="container">
-  <div class="row">
-    <div class="columns four">
-      {{#if ../images}}
-      <img src="{{{images.2.url}}}" alt="" class="cover_art">
-      {{/if}}
-    </div>
-    <div class="columns eight">
-      <div class="app_page_pad">
-        <p>{{{name}}}<br />{{{lastfm.artist}}}</p>
-      </div>
-    </div>
-  </div>
-</div>
+{{#if album}}
+{{#if album.image}}
+{{#if album.image.[1]}}
+{{#if album.image.[1].[#text]}}
+<img src="{{album.image.[1].[#text]}}" alt="Cover art for {{album.name}}" class="cover-art">
+{{name}}<br>{{album.name}}<br>{{album.artist}}
+{{/if}}
+{{/if}}
+{{/if}}
 {{/if}}
