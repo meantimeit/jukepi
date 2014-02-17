@@ -1,5 +1,6 @@
 .DS_Store
 dwsync.xml
 build/dev.html
+build/index.html
 build/less.js
 node_modules/
