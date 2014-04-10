@@ -1,4 +1,4 @@
-![JukePi](https://raw.github.com/meantimeit/jukepi/dev/build/img/loading-logo.jpg)
+![JukePi](https://raw.github.com/meantimeit/jukepi/dev/build/img/loading_logo.jpg)
 
 # JukePi
 
