@@ -28,7 +28,8 @@
        lastfm: {
          key: 'EXAMPLEKEY',
          secret: 'EXAMPLESECRET'
-       }
+       },
+       searchUris: ['spotify']
      };
      jukePi(config, function (err, app) {});
    </script>
