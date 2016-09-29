@@ -1,0 +1,39 @@
+[role=button], button {
+  cursor: pointer;
+  .user-select(none);
+  border: none;
+  margin: 0;
+  color: #fff;
+  background-color: @brand-info;
+  padding: 0 .66em;
+  line-height: 2;
+  &:hover {
+    background-color: fadeout(@brand-info, 50%);
+  }
+}
+
+
+h1 {
+  font-size: 2em;
+  margin: 0 0 .5em;
+  text-transform: uppercase;
+}
+
+.opaque {
+  background-color: rgba(255,255,255,1);
+  -webkit-box-shadow: 0 0 8px #fff;
+  -moz-box-shadow: 0 0 8px #fff;
+  box-shadow: 0 0 8px #fff;
+}
+
+.hidden {
+  position: static;
+  opacity: 0;
+  display: none;
+}
+
+input[type=search] {
+  display: block;
+  margin: 0 auto;
+  width: 85%;
+}
