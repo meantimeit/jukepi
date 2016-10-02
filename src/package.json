@@ -1,0 +1,42 @@
+{
+  "name": "jukepi",
+  "version": "1.0.0",
+  "description": "Raspberry Pi Mopidy Jukebox Frontend",
+  "main": "index.js",
+  "scripts": {
+    "build-release": "npm run build-release-js && npm run build-release-css",
+    "build-debug": "npm run build-debug-js && npm run build-debug-css",
+    "build-release-js": "npm run build-release-js-bundle && npm run build-release-js-app",
+    "build-release-js-bundle": "browserify -r jquery -r backbone | uglifyjs > ../mopidy_jukepi/static/js/bundle.js",
+    "build-release-js-app": "browserify -x jquery -x backbone -s jukePi lib/app.js | uglifyjs > ../mopidy_jukepi/static/js/app.js",
+    "build-release-css": "lessc --strict-imports -x less/app.less > ../mopidy_jukepi/static/css/app.css",
+    "build-debug-js": "npm run build-debug-js-bundle && npm run build-debug-js-app",
+    "build-debug-js-bundle": "browserify -d -r jquery -r backbone > ../mopidy_jukepi/static/js/bundle.js",
+    "build-debug-js-app": "browserify -d -x jquery -x backbone -s jukePi lib/app.js > ../mopidy_jukepi/static/js/app.js"
+  },
+  "repository": "",
+  "author": "",
+  "license": "Apache",
+  "dependencies": {
+    "uuid": "^2.0.1"
+  },
+  "devDependencies": {
+    "backbone": "^1.2.1",
+    "bootstrap": "git://github.com/twbs/bootstrap.git",
+    "browserified-lastfm-api": "git://github.com/meantimeit/browserified-lastfm-api.git",
+    "browserify": "^13.1.0",
+    "browserify-handlebars": "~0.2.0",
+    "handlebars": "~1.3.0",
+    "jquery": "~2.1.0",
+    "less": "~1.6.1",
+    "marked": "~0.2.10",
+    "mopidy": "^0.4.1",
+    "uglify-js": "^2.4.15",
+    "watchify": "^2.4.0"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-handlebars"
+    ]
+  }
+}

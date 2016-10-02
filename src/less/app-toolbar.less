@@ -1,0 +1,53 @@
+[role=toolbar] {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 .5em;
+  > li {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  [role=button], button {
+    line-height: 2;
+    //font-size: 1em;
+    vertical-align: middle;
+  }
+}
+
+@media (max-width: 64em) {
+  [role=toolbar] {
+    [role=button], button {
+      margin-bottom: .125em;
+    }
+    .button-right {
+      float: none;
+    }
+  }
+}
+
+/*
+ * **************************************
+ * Custom CSS for  main tracklist toolbar
+ * **************************************
+ */
+
+#panel-c14 > div > [role=toolbar] {
+  li:nth-child(1), li:nth-child(2), li:nth-child(3) {
+
+  }
+
+  li:nth-child(4) {
+    flex: 1;
+    input {
+      display: block;
+      width: 100%;
+    }
+  }
+
+  li:nth-child(5), li:nth-child(6), li:nth-child(7) {
+    margin-left: auto;
+  }
+}

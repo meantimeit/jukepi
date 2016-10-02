@@ -1,0 +1,92 @@
+[role=listbox] {
+  list-style: none inside ;
+  margin: 0;
+  padding: 0;
+  .box-sizing(border-box);
+  &.loading {
+    padding-top: .9375em;
+    background: transparent url(~"../img/loading.gif") no-repeat top center;
+    .empty-list {
+      display: none;
+    }
+  }
+
+  [role=option] {
+    display: block;
+    .user-select(none);
+    .box-sizing(border-box);
+    cursor: pointer;
+    margin: 0;
+    padding: 0 .75em;
+    line-height: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    //border-radius: @border-radius-large;
+    &[aria-checked="true"], &[aria-selected="true"] {
+      background-color: @gray-light;
+      outline: none;
+      color: #fff;
+      &:focus {
+        background-color: @brand-info;
+      }
+    }
+    &.current_track {
+      background-color: rgba(0,0,0,.1);
+      .list-item-title:before {
+        display: inline;
+        vertical-align: middle;
+        content: ' ';
+        width: 18px;
+        line-height: 16px;
+        padding-left: 1.5em;
+     }
+    }
+    &:hover {
+      background-color: fadeout(@brand-info, 50%);
+    }
+    &:active {
+      background-color: lighten(@brand-info, 25%);
+      outline: none;
+      color: #000;
+    }
+    &[aria-selected="false"]:active, &[aria-selected="true"][aria-checked="false"] {
+      background-color: transparent;
+      color: inherit;
+    }
+    &.dragover:after {
+      background-color: rgba(0,0,0,.2);
+      color: #444;
+      content: ' Move Track Here ';
+      line-height: 2;
+      display: block;
+      margin: 0 -.75em;
+      text-indent: .75em;
+      font-weight: bold;
+      border: 3px dashed rgba(0,0,0,.2);
+    }
+    &.track-playing:before {
+      content: 'equalizer';
+      font-family: 'Material Icons';
+      vertical-align: top;
+    }
+
+    span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .option_extra_information {
+      display: block;
+      font-size: .67em;
+      margin-top: -1.1em;
+      margin-bottom: .5em;
+    }
+    input[type=checkbox] {
+      margin: 0;
+      vertical-align: middle;
+    }
+    .album_artist {
+      color: #333;
+    }
+  }
+}
