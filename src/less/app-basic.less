@@ -2,13 +2,13 @@
   cursor: pointer;
   .user-select(none);
   border: none;
-  margin: 0;
+  margin: 0 .125em 0 0;
   color: #fff;
-  background-color: @brand-info;
+  background-color: @brand-success;
   padding: 0 .66em;
   line-height: 2;
   &:hover {
-    background-color: fadeout(@brand-info, 50%);
+    background-color: saturate(@brand-success, 10%);
   }
 }
 
@@ -37,3 +37,4 @@ input[type=search] {
   margin: 0 auto;
   width: 85%;
 }
+

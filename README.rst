@@ -10,14 +10,6 @@ Mopidy-jukePi
     :target: https://pypi.python.org/pypi/Mopidy-jukePi/
     :alt: Number of PyPI downloads
 
-.. image:: https://img.shields.io/travis/connrs/mopidy-jukepi/master.png?style=flat
-    :target: https://travis-ci.org/connrs/mopidy-jukepi
-    :alt: Travis CI build status
-
-.. image:: https://img.shields.io/coveralls/connrs/mopidy-jukepi/master.svg?style=flat
-   :target: https://coveralls.io/r/connrs/mopidy-jukepi?branch=master
-   :alt: Test coverage
-
 Mopidy web client extension
 
 
@@ -39,7 +31,20 @@ Before starting Mopidy, you must add configuration for
 Mopidy-jukePi to your Mopidy configuration file::
 
     [jukepi]
-    # TODO: Add example of extension config
+    # Enabled by default
+    enabled = true
+    # Override the websocket URL if you have a custom setup
+    websocket_url =
+    # Add the LastFM API key to take advantage of album art/descriptions
+    lastfm_api_key =
+    lastfm_api_secret =
+    # Load custom javascript. Provide absolute/relative URLs. Will become
+    #   useful for custom plugins
+    custom_scripts =
+    # Callback function to call when app is loaded
+    jukepi_callback =
+    # The URIs to be used when searching
+    search_uris = spotify
 
 
 Project resources

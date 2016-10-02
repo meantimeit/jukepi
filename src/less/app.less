@@ -23,7 +23,6 @@ body {
     height: 100%;
 
     [role=tab] {
-      //color: @gray;
     }
   }
 
@@ -152,12 +151,13 @@ input[type=search] {
 @import "app-listbox.less";
 @import "app-toolbar.less";
 @import "app-searchcontrols.less";
+@import "app-slider.less";
+@import "material-fonts.less";
 
 .lastfm-detail {
   overflow: auto;
-  //margin-bottom: .5em;
   padding-top: .5em;
-  background-size: contain;
+  background-size: cover;
   background-repeat: no-repeat;
   background-position: top right;
   text-shadow: #fff 0 0 .25em;
@@ -165,6 +165,12 @@ input[type=search] {
     float: right;
     margin-left: .5em;
     margin-bottom: .5em;
+  }
+}
+
+@media (min-width: @screen-sm-min) {
+  .lastfm-detail {
+    background-size: contain;
   }
 }
 

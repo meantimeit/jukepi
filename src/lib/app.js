@@ -1,4 +1,3 @@
-var concat = require('jpf').concat;
 var EventEmitter = require('events').EventEmitter;
 var tracklist = require('./tracklist.js');
 var search = require('./search.js');
@@ -7,7 +6,7 @@ var LastFM = require('browserified-lastfm-api');
 var history = require('backbone').history;
 var TabView = require('jpf').TabView;
 
-function jukePi(config, plugins) {
+function jukePi(config, callback) {
   var mopidy = !config.mopidyWebSocketUrl ? new Mopidy({ callingConvention: 'by-position-only' }) : new Mopidy({ webSocketUrl: config.mopidyWebSocketUrl, callingConvention: 'by-position-only' });
   var lastfm = new LastFM({
     apiKey: config.lastfm && config.lastfm.key ? config.lastfm.key : '',
@@ -19,17 +18,16 @@ function jukePi(config, plugins) {
     mopidy: mopidy,
     events: new EventEmitter()
   };
-  var collection = [
-    tracklist(app, 0),
-    search(app, 1)
-  ];
-
   function storeUriSchemes(uriSchemes) {
     config.uriSchemes = uriSchemes;
   }
 
   function start() {
     try {
+      var collection = [
+        tracklist(app, 0),
+        search(app, 1)
+      ];
       var view = new TabView({
         className: 'app-view',
         collection: collection
@@ -46,6 +44,7 @@ function jukePi(config, plugins) {
 
   function onceOnline() {
     mopidy.getUriSchemes().then(storeUriSchemes).then(start);
+    callback(app);
   }
 
   mopidy.once('state:online', onceOnline);

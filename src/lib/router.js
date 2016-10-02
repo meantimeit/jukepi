@@ -77,7 +77,6 @@ var Router = Backbone.Router.extend({
     this._rootElement.appendChild(view.render().el);
   },
   search: function (query) {
-    console.log(this);
     this.trigger('beforeRoute');
     var view = new SearchTabView({
       router: this,

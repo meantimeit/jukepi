@@ -1,6 +1,6 @@
 {
   "name": "jukepi",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Raspberry Pi Mopidy Jukebox Frontend",
   "main": "index.js",
   "scripts": {

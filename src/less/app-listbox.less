@@ -15,7 +15,7 @@
     display: block;
     .user-select(none);
     .box-sizing(border-box);
-    cursor: default;
+    cursor: pointer;
     margin: 0;
     padding: 0 .75em;
     line-height: 2;
@@ -64,6 +64,11 @@
       text-indent: .75em;
       font-weight: bold;
       border: 3px dashed rgba(0,0,0,.2);
+    }
+    &.track-playing:before {
+      content: 'equalizer';
+      font-family: 'Material Icons';
+      vertical-align: top;
     }
 
     span {
