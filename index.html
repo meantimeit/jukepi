@@ -1,88 +1,114 @@
 <!doctype html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>jukePi by meantimeit</title>
+    <title>jukePi by Meantime IT</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>jukePi</h1>
-        <p></p>
+</head>
+<body>
+<div class="wrapper">
+    <main>
+        <p><img src="images/jp-logo.png" alt="JukePi"></p>
 
-        <p class="view"><a href="https://github.com/meantimeit/jukepi">View the Project on GitHub <small>meantimeit/jukepi</small></a></p>
+        <h1 class="title">Mopidy-jukePi</h1>
 
-
-        <ul>
-          <li><a href="./0.2.1.zip">Download <strong>ZIP File</strong></a></li>
-          <li><a href="./0.2.1.tbz">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/meantimeit/jukepi">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <p><img src="https://raw.github.com/meantimeit/jukepi/dev/build/img/landing_logo.png" alt="JukePi"></p>
-
-<h1>
-<a name="jukepi" class="anchor" href="#jukepi"><span class="octicon octicon-link"></span></a>JukePi</h1>
-
-<p>JukePi is a web client for the <a href="http://mopidy.com">Mopidy</a> music server. Mopidy empowers you to create a custom music server that can connect to Spotify, play local mp3s and more.</p>
-
-<p>In our office, we are using it with a Raspberry Pi as our Jukebox. Once this web client was created, the JukePi was born.</p>
-
-<p>The application is a bespoke application with data models built upon Backbone. Even so, most models contain customisations to retrieve data from a Mopidy connection over <a href="http://www.w3.org/TR/2012/CR-websockets-20120920/">Websockets</a>. The websockets requirement is a core part of the Mopidy HTTP API and means that this client will be unable to function with IE9 and below. Special effort will be made to ensure that it functions well in all websockets enabled browsers.</p>
-
-<h2>
-<a name="installation-instructions" class="anchor" href="#installation-instructions"><span class="octicon octicon-link"></span></a>Installation Instructions</h2>
-
-<p>To install, you only need the build directory. The build directory contains the files needed by Mopidy. The index.html file will need to be modified with your custom configuration. If your Mopidy installation is fairly vanilla, you may remove the webSocketUrl option from the index.html file as it will not be necessary.</p>
-
-<h2>
-<a name="developer-instructions" class="anchor" href="#developer-instructions"><span class="octicon octicon-link"></span></a>Developer Instructions</h2>
-
-<p>To work on this project, you will need to have the node and npm binaries installed. Clone the project:</p>
-
-<pre><code>git clone git://github.com/meantimeit/jukepi.git &amp;&amp; cd jukepi &amp;&amp; git submodule update --init --recursive
-</code></pre>
-
-<p>Once complete, you will need to install the necessary npm packages:</p>
-
-<pre><code>npm install
-</code></pre>
-
-<p>During the course of development, you will need to re-create the build files. There are a number of scripts that will enable you to do this:</p>
-
-<ul>
-<li>
-<code>npm run build-debug-js</code> - Create a debug build of the JS</li>
-<li>
-<code>npm run build-debug-css</code> - Create a debug build of the CSS</li>
-<li>
-<code>npm run build-debug</code> - Create a debug build of the JS and CSS</li>
-<li>
-<code>npm run build-js</code> - Build the JS</li>
-<li>
-<code>npm run build-css</code> - Build the CSS</li>
-<li>
-<code>npm run build</code> - Build a release</li>
-</ul><h2>
-<a name="screenshots" class="anchor" href="#screenshots"><span class="octicon octicon-link"></span></a>Screenshots</h2>
-
-<p>Coming soon™</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/meantimeit">meantimeit</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
-    </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
+        <a class="reference external image-reference" href="https://pypi.python.org/pypi/Mopidy-jukePi/"><img alt="Latest PyPI version" src="https://img.shields.io/pypi/v/Mopidy-jukePi.svg?style=flat"/></a>
+        <a class="reference external image-reference" href="https://pypi.python.org/pypi/Mopidy-jukePi/"><img alt="Number of PyPI downloads" src="https://img.shields.io/pypi/dm/Mopidy-jukePi.svg?style=flat"/></a>
+        <p>Mopidy web client extension</p>
+        <div class="section" id="installation">
+            <h1>Installation</h1>
+            <p>Install by running:</p>
+            <pre class="literal-block">
+pip install Mopidy-jukePi
+</pre>
+            <p>Or, if available, install the Debian/Ubuntu package from
+                <a class="reference external" href="http://apt.mopidy.com/">apt.mopidy.com</a>.</p>
+        </div>
+        <div class="section" id="configuration">
+            <h1>Configuration</h1>
+            <p>Before starting Mopidy, you must add configuration for
+                Mopidy-jukePi to your Mopidy configuration file:</p>
+            <pre class="literal-block">
+[jukepi]
+# Enabled by default
+enabled = true
+# Override the websocket URL if you have a custom setup
+websocket_url =
+# Add the LastFM API key to take advantage of album art/descriptions
+lastfm_api_key =
+lastfm_api_secret =
+# Load custom javascript. Provide absolute/relative URLs. Will become
+#   useful for custom plugins
+custom_scripts =
+# Callback function to call when app is loaded
+jukepi_callback =
+# The URIs to be used when searching
+search_uris = spotify
+</pre>
+        </div>
+        <div class="section" id="project-resources">
+            <h1>Project resources</h1>
+            <ul class="simple">
+                <li><a class="reference external" href="https://github.com/meantimeit/jukepi">Source code</a></li>
+                <li><a class="reference external" href="https://github.com/meantimeit/jukepi/issues">Issue tracker</a>
+                </li>
+                <li>
+                    <a class="reference external" href="https://github.com/meantimeit/jukepi/archive/master.tar.gz#egg=Mopidy-jukePi-dev">Development
+                        branch tarball</a></li>
+            </ul>
+        </div>
+        <div class="section" id="about">
+            <h1>About</h1>
+            <p>JukePi is a web client for the <a class="reference external" href="http://mopidy.com">Mopidy</a> music
+                server. Mopidy empowers you to create a custom music server that can connect to Spotify, play local mp3s
+                and more.</p>
+            <p>In our office, we are using it with a Raspberry Pi as our Jukebox. Once this web client was created, the
+                JukePi was born.</p>
+            <p>The application is a bespoke application with data models built upon Backbone. Even so, most models
+                contain customisations to retrieve data from a Mopidy connection over
+                <a class="reference external" href="http://www.w3.org/TR/2012/CR-websockets-20120920/">Websockets</a>.
+                The websockets requirement is a core part of the Mopidy HTTP API and means that this client will be
+                unable to function with IE9 and below. Special effort will be made to ensure that it functions well in
+                all websockets enabled browsers.</p>
+        </div>
+        <div class="section" id="developer-instructions">
+            <h1>Developer Instructions</h1>
+            <p>To work on this project, you will need to have the node and npm binaries installed. Clone the
+                project:</p>
+            <blockquote>
+                git clone git://github.com/meantimeit/jukepi.git &amp;&amp; cd jukepi &amp;&amp; git submodule update
+                --init --recursive
+            </blockquote>
+            <p>Once complete, you will need to install the necessary npm packages:</p>
+            <blockquote>
+                npm install
+            </blockquote>
+            <p>During the course of development, you will need to re-create the build files. There are a number of
+                scripts that will enable you to do this:</p>
+            <blockquote>
+                <ul class="simple">
+                    <li><cite>npm run build-debug-js</cite> - Create a debug build of the JS</li>
+                    <li><cite>npm run build-debug-css</cite> - Create a debug build of the CSS</li>
+                    <li><cite>npm run build-debug</cite> - Create a debug build of the JS and CSS</li>
+                    <li><cite>npm run build-js</cite> - Build the JS</li>
+                    <li><cite>npm run build-css</cite> - Build the CSS</li>
+                    <li><cite>npm run build</cite> - Build a release</li>
+                </ul>
+            </blockquote>
+        </div>
+        <div class="section" id="screenshots">
+            <h1>Screenshots</h1>
+            <p>
+                <img src="images/screenshots/screenshot1.png" alt="">
+                <img src="images/screenshots/screenshot2.png" alt="">
+            </p>
+        </div>
+    </main>
+</div>
+<script src="javascripts/scale.fix.js"></script>
+</body>
 </html>
