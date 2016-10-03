@@ -44,7 +44,9 @@ function jukePi(config, callback) {
 
   function onceOnline() {
     mopidy.getUriSchemes().then(storeUriSchemes).then(start);
-    callback(app);
+    if (typeof callback === 'function') {
+      callback(app);
+    }
   }
 
   mopidy.once('state:online', onceOnline);
