@@ -1,11 +1,12 @@
 input[type=range] {
+  position:relative;
   -webkit-appearance: none;
   margin: 0;
   display: inline-block;
-  width: auto;
-  min-width: 4em;
+  width: 12em;
   height: 2em;
-  padding: 0 .25em;
+  padding: 0 1em;
+  margin-right: .5em;
 }
 
 input[type=range]:focus {
@@ -16,36 +17,40 @@ input[type=range]::-webkit-slider-runnable-track {
   height: 10px;
   cursor: pointer;
   animate: 0.2s;
-  background: @brand-success;
+  background: transparent;
   border-radius: 5px;
+  position: relative;
+  z-index: 2;
 }
 input[type=range]::-webkit-slider-thumb {
-  border: 1px solid #000000;
+  border: 1px solid #444;
   height: 30px;
-  width: 15px;
+  width: 5px;
   border-radius: 5px;
-  background: #FFFFFF;
+  background: #fff;
   cursor: pointer;
   -webkit-appearance: none;
   margin-top: -10.5px;
 }
 input[type=range]:focus::-webkit-slider-runnable-track {
-  background: @brand-success;
+  background: transparent;
 }
 input[type=range]::-moz-range-track {
   width: 100%;
   height: 10px;
   cursor: pointer;
   animate: 0.2s;
-  background: @brand-success;
+  background: transparent;
   border-radius: 5px;
+  position: relative;
+  z-index: 2;
 }
 input[type=range]::-moz-range-thumb {
-  border: 1px solid #000000;
+  border: 1px solid #444;
   height: 30px;
-  width: 15px;
+  width: 5px;
   border-radius: 5px;
-  background: #FFFFFF;
+  background: #fff;
   cursor: pointer;
 }
 input[type=range]::-ms-track {
@@ -56,6 +61,8 @@ input[type=range]::-ms-track {
   background: transparent;
   border-color: transparent;
   color: transparent;
+  position: relative;
+  z-index: 2;
 }
 input[type=range]::-ms-fill-lower {
   background: @brand-success;
@@ -66,16 +73,56 @@ input[type=range]::-ms-fill-upper {
   border-radius: 10px;
 }
 input[type=range]::-ms-thumb {
-  border: 1px solid #000000;
+  border: 1px solid #444;
   height: 30px;
-  width: 15px;
+  width: 5px;
   border-radius: 5px;
-  background: #FFFFFF;
+  background: #fff;
   cursor: pointer;
 }
 input[type=range]:focus::-ms-fill-lower {
-  background: @brand-success;
+  background: transparent;
 }
 input[type=range]:focus::-ms-fill-upper {
-  background: @brand-success;
+  background: transparent;
+}
+input[type=range]:after {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  //font-size: 24px;  /* Preferred icon size */
+  //display: inline-block;
+  line-height: 2;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  vertical-align: top;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+
+  content: '\e050';
+}
+
+input[type=range]:before {
+  display: block;
+  position: absolute;
+  border-style: solid;
+  border-width: 1em 9em 0 0;
+  border-color: transparent @brand-success transparent transparent;
+  width: 0;
+  box-sizing: border-box;
+  content:' ';
+  margin-top: .45em;
+  z-index:1;
 }
