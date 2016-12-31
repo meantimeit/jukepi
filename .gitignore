@@ -1,7 +1,9 @@
 mopidy_jukepi/static/dev.html
 mopidy_jukepi/static/index.html
 mopidy_jukepi/static/less.js
-src/node_modules/
+!src/node_modules/
+src/node_modules/*
+!src/node_modules/jpf/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -19,7 +21,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
