@@ -1,16 +1,16 @@
-var ButtonView = require('../button-view');
-var AutoclearButtonView = ButtonView.extend({
+var ActionView = require('../action-view');
+var AutoclearButtonView = ActionView.extend({
   initialize: function (options) {
     options = options || {};
 
     this.mopidy = options.mopidy;
-    options.label = 'check_box';
+    options.label = 'Disable auto-clear';
     options.action = this.toggleConsumeState.bind(this);
 
     this.mopidy.on('event:optionsChanged', this.checkConsumeState.bind(this));
     this.checkConsumeState();
 
-    return ButtonView.prototype.initialize.call(this, options);
+    return ActionView.prototype.initialize.call(this, options);
   },
   checkConsumeState: function () {
     this.mopidy.tracklist.getConsume().then(function (state) {
@@ -18,19 +18,18 @@ var AutoclearButtonView = ButtonView.extend({
     }.bind(this));
   },
   toggleConsumeState: function () {
-    if (this._label == 'check_box') {
-      this.mopidy.tracklist.setConsume(false);
-    }
-    else {
-      this.mopidy.tracklist.setConsume(true);
-    }
+    var mopidy = this.mopidy;
+
+    mopidy.tracklist.getConsume().then(function(consume) {
+      mopidy.tracklist.setConsume(!consume);
+    });
   },
   consumeStateChanged: function (state) {
-    this._label = state ? 'check_box' : 'check_box_outline_blank';
+    this._label = state ? 'Disable auto-clear' : 'Enable auto-clear';
     this.render();
   },
   template: function () {
-    return '<span class="material-icons">' + this._label + '</span>' + ' Auto-clear';
+    return '<span class="material-icons">clear_all</span> ' + this._label;
   }
 });
 

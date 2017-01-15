@@ -16,7 +16,9 @@ var TrackListView = ListView.extend({
 
     var buttons = [];
 
-    buttons.push(ButtonView.create('add_circle', this._queueChecked.bind(this), 'Add to queue', 'material-icons'));
+    buttons.push(ButtonView.create('add', this._queueChecked.bind(this), 'Add to queue', 'material-icons'));
+
+    buttons.push(ButtonView.create('playlist_add', this._queueAll.bind(this), 'Queue all tracks', 'material-icons'));
 
     if (options.artistButtonLabel) {
       buttons.push(ButtonView.create('More by ' + options.artistButtonLabel, this._navigateArtist.bind(this)));
@@ -28,6 +30,19 @@ var TrackListView = ListView.extend({
 
     return ListView.prototype.initialize.call(this, options);
   },
+	_queueAll: function () {
+		this._views.at(1).get('view').setCheckedAll();
+		var selectedModelViews = this._views.at(1).get('view').getCheckedViews();
+		var tracks;
+
+		if (selectedModelViews.length) {
+			tracks = selectedModelViews.map(function (view) {
+				return view.model.toJSON();
+			});
+
+			this._app.mopidy.tracklist.add(tracks);
+		}
+	},
   _queueChecked: function () {
     var selectedModelViews = this._views.at(1).get('view').getCheckedViews();
     var tracks;

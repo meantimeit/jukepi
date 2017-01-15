@@ -88,10 +88,3 @@ Screenshots
 
 Coming soon™
 
-Changelog
-=========
-
-v1.0.0 (UNRELEASED)
-----------------------------------------
-
-- Initial release.

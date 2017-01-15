@@ -3,7 +3,7 @@ var SearchControlView = View.extend({
   tagName: 'nav',
   className: 'search-controls',
   template: function (data) {
-    return '<input type="search">';
+    return '<input type="search" placeholder="Search…">';
   },
   events: {
     'keyup [type=search]': 'search'
@@ -12,7 +12,7 @@ var SearchControlView = View.extend({
     var query = encodeURIComponent(event.target.value);
 
     if (event.which === 13 && query !== '') {
-      this.router.navigate('search/' + query, { trigger: true });
+      this.router.navigate('search/' + query, {trigger: true});
     }
   }
 });

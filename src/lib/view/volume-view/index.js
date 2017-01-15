@@ -1,19 +1,16 @@
 var View = require('jpf').View;
 var VolumeView = View.extend({
-  tagName: 'input',
-  attributes: {
-    type: 'range'
-  },
+  tagName: 'div',
   events: {
     'input': 'updateVolume'
+  },
+  template: function () {
+    return '<input type="range"><output></output>';
   },
   initialize: function (options) {
     options = options || {};
 
     this.mopidy = options.mopidy;
-    options.label = 'check_box';
-    options.action = this.updateVolume.bind(this);
-
     this.mopidy.on('event:volumeChanged', this.checkVolume.bind(this));
     this.checkVolume();
 
@@ -21,16 +18,15 @@ var VolumeView = View.extend({
   },
   checkVolume: function () {
     this.mopidy.playback.getVolume().then(function (volume) {
-      this.volumeChanged({ volume: volume });
+      this.volumeChanged({volume: volume});
     }.bind(this));
   },
   updateVolume: function () {
-    this.mopidy.playback.setVolume(this.el.value * 1);
+    this.mopidy.playback.setVolume(this.el.querySelector('input').value * 1);
   },
   volumeChanged: function (state) {
-    this.el.value = state.volume;
-    this.el.title = 'Adjust volume (' + state.volume + ')';
-    this.render();
+    this.el.querySelector('input').value = state.volume;
+    this.el.querySelector('output').textContent = state.volume;
   }
 });
 

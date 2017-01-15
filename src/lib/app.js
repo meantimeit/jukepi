@@ -10,7 +10,8 @@ function jukePi(config, callback) {
   var mopidy = !config.mopidyWebSocketUrl ? new Mopidy({ callingConvention: 'by-position-only' }) : new Mopidy({ webSocketUrl: config.mopidyWebSocketUrl, callingConvention: 'by-position-only' });
   var lastfm = new LastFM({
     apiKey: config.lastfm && config.lastfm.key ? config.lastfm.key : '',
-    apiSecret: config.lastfm && config.lastfm.secret ? config.lastfm.secret : ''
+    apiSecret: config.lastfm && config.lastfm.secret ? config.lastfm.secret : '',
+    apiUrl: 'https://ws.audioscrobbler.com/2.0/'
   });
   var app = {
     config: config,

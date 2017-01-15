@@ -21,7 +21,7 @@ var TrackView = ModelView.extend({
     }
 
     if (extra.length) {
-      h += '<br><span class="option_extra_information">' + extra.join(' / ') + '</span>';
+      h += '<br><span class="option_extra_information">' + extra.join(' <strong>by</strong> ') + '</span>';
     }
 
     return h;

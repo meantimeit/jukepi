@@ -48,7 +48,21 @@ input[type=search] {
     outline: none;
     background: @brand-info;
     border-color: @brand-info;
+
+    &::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+      color: #fff;
+    }
+    &::-moz-placeholder { /* Firefox 19+ */
+      color: #fff;
+    }
+    &:-ms-input-placeholder { /* IE 10+ */
+      color: #fff;
+    }
+    &:-moz-placeholder { /* Firefox 18- */
+      color: #fff;
+    }
   }
+
 }
 
 .search-controls {
@@ -272,5 +286,56 @@ input[type=search] {
     &:hover {
       background-position: -160px -32px;
     }
+  }
+}
+
+.pop-view {
+  position: absolute;
+  background-color: #fff;
+  padding: .5em;
+  -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,.5);
+  -moz-box-shadow: 2px 2px 2px rgba(0,0,0,.5);
+  box-shadow: 2px 2px 2px rgba(0,0,0,.5);
+  border: solid 1px @brand-success;
+}
+
+.volume-view {
+  text-align: center;
+
+  & > input {
+    min-width: 250px !important;
+  }
+
+  output {
+    font-size: 1em;
+    display: inline-block;
+    background-color: @brand-success;
+    padding: .25em;
+    line-height: 1;
+    border-radius:.125em;
+    color: #fff;
+    min-width: 2.72em;
+    -webkit-box-shadow: inset 1px 1px 1px rgba(0,0,0,.1);
+    -moz-box-shadow: inset 1px 1px 1px rgba(0,0,0,.1);
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,.1);
+  }
+}
+
+.action-view {
+  cursor: pointer;
+}
+
+ul.tracklist-settings-view {
+  list-style: none outside;
+  padding: 0;
+  margin: -.5em;
+}
+
+.tracklist-settings-view > li {
+  display: block;
+  padding: .33em .5em;
+
+  &:hover {
+    background-color: fadeout(@brand-success, 30%);
   }
 }
