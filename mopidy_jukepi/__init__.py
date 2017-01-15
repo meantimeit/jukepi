@@ -6,7 +6,7 @@ import tornado.web
 from mopidy import config, ext
 
 
-__version__ = '1.0.6'
+__version__ = '1.0.7'
 
 
 class Extension(ext.Extension):

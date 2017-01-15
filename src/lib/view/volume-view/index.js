@@ -25,7 +25,11 @@ var VolumeView = View.extend({
     this.mopidy.playback.setVolume(this.el.querySelector('input').value * 1);
   },
   volumeChanged: function (state) {
-    this.el.querySelector('input').value = state.volume;
+    // Only set this if the input isn't currently the active
+    // element
+    if (document.activeElement != this.el.querySelector('input')) {
+      this.el.querySelector('input').value = state.volume;
+    }
     this.el.querySelector('output').textContent = state.volume;
   }
 });
