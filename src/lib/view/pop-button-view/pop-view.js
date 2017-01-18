@@ -48,7 +48,9 @@ var PopView = View.extend({
     this.hide();
   },
   _onMouseOut: function (event) {
-    if (!this.el.contains(event.toElement)) {
+    var target = event.toElement || event.relatedTarget;
+
+    if (!this.el.contains(target)) {
       this.hide();
     }
   }
