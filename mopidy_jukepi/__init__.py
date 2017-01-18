@@ -6,7 +6,7 @@ import tornado.web
 from mopidy import config, ext
 
 
-__version__ = '1.0.7'
+__version__ = '1.0.8'
 
 
 class Extension(ext.Extension):
@@ -60,6 +60,7 @@ class JukePiRequestHandler(tornado.web.RequestHandler):
 
     def get(self):
         self.render('templates/index.html', **{
+            'jukepi_version': __version__,
             'js_settings': self.js_settings,
             'custom_scripts': self.config.get('jukepi').get('custom_scripts'),
             'jukepi_callback': self.config.get('jukepi').get('jukepi_callback')

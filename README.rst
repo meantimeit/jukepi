@@ -82,9 +82,3 @@ During the course of development, you will need to re-create the build files. Th
  * `npm run build-js` - Build the JS
  * `npm run build-css` - Build the CSS
  * `npm run build` - Build a release
-
-Screenshots
-===========
-
-Coming soon™
-
