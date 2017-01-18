@@ -45,13 +45,13 @@ var PopView = View.extend({
     }
   },
   _onMouseUp: function (event) {
-    this.hide();
+    setTimeout(function() { this.hide(); }.bind(this), 1);
   },
   _onMouseOut: function (event) {
     var target = event.toElement || event.relatedTarget;
 
     if (!this.el.contains(target)) {
-      this.hide();
+      setTimeout(function() { this.hide(); }.bind(this), 1);
     }
   }
 });
